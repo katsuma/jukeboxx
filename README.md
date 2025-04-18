@@ -37,6 +37,8 @@ VITE_FIREBASE_DATABASE_URL=your_firebase_database_url
 VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
 ```
 
+The `VITE_YOUTUBE_API_KEY` is required for fetching video information from the YouTube Data API. You can obtain this key from the [Google Cloud Console](https://console.cloud.google.com/) by creating a project and enabling the YouTube Data API v3.
+
 ### Installation
 
 ```bash
@@ -56,6 +58,10 @@ The application will be available at `http://localhost:5173`.
 ```bash
 npm run build
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
