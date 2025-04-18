@@ -11,7 +11,6 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { addToQueue } = usePlaylist();
 
-  // テスト用の動画を追加する関数
   const addTestVideo = () => {
     const testUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
     console.log("テスト動画を追加します:", testUrl);
@@ -21,11 +20,9 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // useRefを使用して入力値を直接取得
     const inputValue = inputRef.current?.value || '';
     console.log("フォーム送信: URL =", inputValue);
 
-    // URLの検証
     if (!inputValue.trim()) {
       console.log("エラー: URLが空です");
       setError("URLを入力してください");
@@ -40,10 +37,8 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
 
     console.log("URLは有効です。キューに追加します:", inputValue);
 
-    // キューに追加
     addToQueue(inputValue);
 
-    // フォームをリセット
     if (inputRef.current) {
       inputRef.current.value = '';
     }
@@ -72,7 +67,6 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
         )}
       </form>
 
-      {/* テスト用ボタン */}
       <button
         onClick={addTestVideo}
         className="mt-4 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
