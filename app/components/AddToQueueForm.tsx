@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { usePlaylist } from "../contexts/PlaylistContext";
 import { isValidYouTubeUrl } from "../utils/youtube";
 
@@ -7,29 +7,46 @@ interface AddToQueueFormProps {
 }
 
 export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
-  const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { addToQueue } = usePlaylist();
+
+  // テスト用の動画を追加する関数
+  const addTestVideo = () => {
+    const testUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    console.log("テスト動画を追加します:", testUrl);
+    addToQueue(testUrl);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // useRefを使用して入力値を直接取得
+    const inputValue = inputRef.current?.value || '';
+    console.log("フォーム送信: URL =", inputValue);
+
     // URLの検証
-    if (!url.trim()) {
+    if (!inputValue.trim()) {
+      console.log("エラー: URLが空です");
       setError("URLを入力してください");
       return;
     }
 
-    if (!isValidYouTubeUrl(url)) {
+    if (!isValidYouTubeUrl(inputValue)) {
+      console.log("エラー: 無効なYouTube URL");
       setError("有効なYouTube URLを入力してください");
       return;
     }
 
+    console.log("URLは有効です。キューに追加します:", inputValue);
+
     // キューに追加
-    addToQueue(url);
+    addToQueue(inputValue);
 
     // フォームをリセット
-    setUrl("");
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
     setError(null);
   };
 
@@ -38,9 +55,8 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
       <form onSubmit={handleSubmit} className="flex flex-col space-y-2">
         <div className="flex flex-col md:flex-row gap-2">
           <input
+            ref={inputRef}
             type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
             placeholder="YouTube URL を入力"
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
           />
@@ -55,6 +71,14 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
           <p className="text-red-500 text-sm">{error}</p>
         )}
       </form>
+
+      {/* テスト用ボタン */}
+      <button
+        onClick={addTestVideo}
+        className="mt-4 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+      >
+        テスト動画を追加
+      </button>
     </div>
   );
 }
