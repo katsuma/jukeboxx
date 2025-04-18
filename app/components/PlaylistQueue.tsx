@@ -20,8 +20,8 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
 
   // キューアイテムをレンダリングする関数
   const renderQueueItem = (item: PlaylistItem, index: number, isHistory = false) => {
-    // YouTubeのビデオIDからサムネイルURLを生成
-    const thumbnailUrl = `https://img.youtube.com/vi/${item.videoId}/default.jpg`;
+    // サムネイルURLを使用
+    const thumbnailUrl = item.thumbnail;
 
     return (
       <div
@@ -42,7 +42,7 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
         <div className="flex-1 min-w-0">
           <p className="text-sm truncate">
             {isHistory ? "再生済み: " : `${index + 1}. `}
-            {item.videoId}
+            {item.title}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             {formatDate(item.addedAt)}

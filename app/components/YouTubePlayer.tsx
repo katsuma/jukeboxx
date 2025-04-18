@@ -3,12 +3,19 @@ import YouTube from "react-youtube";
 import type { YouTubeEvent, YouTubePlayer as YTPlayer } from "react-youtube";
 import { usePlaylist } from "../contexts/PlaylistContext";
 
+// YouTubeプレーヤーから動画情報を取得するための型定義
+interface YouTubePlayerData {
+  title?: string;
+  author?: string;
+  videoId?: string;
+}
+
 interface YouTubePlayerProps {
   className?: string;
 }
 
 export function YouTubePlayer({ className = "" }: YouTubePlayerProps) {
-  const { currentItem, playNext } = usePlaylist();
+  const { currentItem, playNext, updateCurrentItemInfo } = usePlaylist();
   const playerRef = useRef<YTPlayer | null>(null);
 
   // YouTubeプレーヤーのオプション
@@ -26,6 +33,20 @@ export function YouTubePlayer({ className = "" }: YouTubePlayerProps) {
   // プレーヤーの準備完了時
   const onReady = (event: YouTubeEvent) => {
     playerRef.current = event.target;
+
+    // 動画情報を取得して更新
+    if (currentItem) {
+      try {
+        // YouTubeプレーヤーから動画タイトルを取得
+        const videoData = event.target.getVideoData() as YouTubePlayerData;
+        if (videoData && videoData.title) {
+          // タイトルが取得できた場合は更新
+          updateCurrentItemInfo(videoData.title);
+        }
+      } catch (error) {
+        console.error('動画情報の取得に失敗しました:', error);
+      }
+    }
   };
 
   // 動画再生終了時

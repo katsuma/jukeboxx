@@ -1,12 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { extractYouTubeVideoId } from "../utils/youtube";
+import { fetchYouTubeVideoInfo } from "../utils/youtube-api";
 
 // プレイリストアイテムの型定義
 export interface PlaylistItem {
   id: string;
   url: string;
   videoId: string;
+  title: string;
+  thumbnail: string;
   addedAt: Date;
 }
 
@@ -21,6 +24,7 @@ interface PlaylistContextType {
   // 現在再生中の曲
   currentItem: PlaylistItem | null;
   playNext: () => void;
+  updateCurrentItemInfo: (title: string) => void;
 
   // 再生履歴
   history: PlaylistItem[];
@@ -43,18 +47,39 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
   const recentHistory = history.slice(0, 3);
 
   // キューに曲を追加
-  const addToQueue = (url: string) => {
+  const addToQueue = async (url: string) => {
     const videoId = extractYouTubeVideoId(url);
     if (!videoId) return;
 
-    const newItem: PlaylistItem = {
+    // 一時的なデフォルト値でアイテムを作成
+    const tempItem: PlaylistItem = {
       id: crypto.randomUUID(),
       url,
       videoId,
+      title: `動画を読み込み中... (${videoId})`,
+      thumbnail: `https://img.youtube.com/vi/${videoId}/default.jpg`,
       addedAt: new Date(),
     };
 
-    setQueue((prev) => [...prev, newItem]);
+    // キューに追加
+    setQueue((prev) => [...prev, tempItem]);
+
+    try {
+      // 動画情報を非同期で取得
+      const videoInfo = await fetchYouTubeVideoInfo(videoId);
+
+      // 取得した情報で更新
+      setQueue((prev) =>
+        prev.map(item =>
+          item.id === tempItem.id
+            ? { ...item, title: videoInfo.title, thumbnail: videoInfo.thumbnail }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error('動画情報の取得に失敗しました:', error);
+      // エラー時は何もしない（デフォルト値のまま）
+    }
   };
 
   // キューから曲を削除
@@ -84,6 +109,16 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // 現在再生中の曲の情報を更新
+  const updateCurrentItemInfo = (title: string) => {
+    if (currentItem) {
+      setCurrentItem({
+        ...currentItem,
+        title: title || currentItem.title,
+      });
+    }
+  };
+
   // 初期化時に最初の曲を再生
   useEffect(() => {
     if (queue.length > 0 && !currentItem) {
@@ -98,6 +133,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
     clearQueue,
     currentItem,
     playNext,
+    updateCurrentItemInfo,
     history,
     recentHistory,
   };
