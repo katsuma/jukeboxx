@@ -23,16 +23,17 @@ export default function Home() {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* プレーヤーとフォーム */}
           <div className="lg:col-span-2 space-y-6">
             <YouTubePlayer className="w-full" />
             <AddToQueueForm className="w-full" />
           </div>
 
-          {/* キューと再生履歴 */}
           <div className="lg:col-span-1">
             <PlaylistQueue className="w-full" />
           </div>
+        </div>
+        <div className="text-center text-gray-500 text-xs mt-4 py-2">
+          &copy; {new Date().getFullYear()} Ryo Katsuma. All rights reserved.
         </div>
       </div>
     </PlaylistProvider>
