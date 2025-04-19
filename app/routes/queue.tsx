@@ -8,15 +8,50 @@ import { PlaylistQueue } from "../components/PlaylistQueue";
 import { useEffect, useState } from "react";
 import { firebaseDB } from "../utils/firebase";
 
-export function meta({ params }: Route.MetaArgs) {
+export function meta({ params, data }: Route.MetaArgs) {
+  // loaderから取得したqueueNameを使用
+  const queueName = data?.queueName || "Queue";
+  const title = `${queueName} | Jukeboxx - Create a new queue`;
+  const description = "A jukebox application that manages and plays YouTube videos in a queue";
+  const ogpImageUrl = "/ogp.png";
+  const baseUrl = "https://jukeboxx.vercel.app";
+  const url = `${baseUrl}/${params.queueId}`;
+
   return [
-    { title: "YouTube Jukebox" },
-    { name: "description", content: "A jukebox application that manages and plays YouTube videos in a queue" },
+    // 基本メタタグ
+    { title },
+    { name: "description", content: description },
+
+    // OGP（Open Graph Protocol）メタタグ
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:image", content: ogpImageUrl },
+    { property: "og:url", content: url },
+    { property: "og:type", content: "website" },
+
+    // Twitterカードメタタグ
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: ogpImageUrl },
   ];
 }
 
-export function loader({ params }: Route.LoaderArgs) {
-  return { queueId: params.queueId };
+export async function loader({ params }: Route.LoaderArgs) {
+  const queueId = params.queueId;
+  let queueName = "Queue";
+
+  try {
+    // サーバーサイドでqueueNameを取得
+    const metadata = await firebaseDB.getQueueMetadata(queueId);
+    if (metadata && metadata.name) {
+      queueName = metadata.name;
+    }
+  } catch (error) {
+    console.error('Error fetching queue metadata in loader:', error);
+  }
+
+  return { queueId, queueName };
 }
 
 export default function Queue() {
@@ -38,7 +73,7 @@ export default function Queue() {
           if (metadata) {
             setQueueName(metadata.name);
             if (typeof document !== 'undefined') {
-              document.title = `${metadata.name} - YouTube Jukebox`;
+              document.title = `${metadata.name} | Jukeboxx - Create a new queue`;
             }
           } else {
             setQueueName("Unnamed Queue");

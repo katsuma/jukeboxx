@@ -5,9 +5,28 @@ import { firebaseDB } from "../utils/firebase";
 import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
+  const title = "Jukeboxx - Create a new queue";
+  const description = "Create a new queue for your YouTube Jukebox";
+  const ogpImageUrl = "/ogp.png";
+  const url = "https://jukeboxx.vercel.app/"; // 本番環境のURLに置き換えてください
+
   return [
-    { title: "Jukeboxx - Create Queue" },
-    { name: "description", content: "Create a new queue for your YouTube Jukebox" },
+    // 基本メタタグ
+    { title },
+    { name: "description", content: description },
+
+    // OGP（Open Graph Protocol）メタタグ
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:image", content: ogpImageUrl },
+    { property: "og:url", content: url },
+    { property: "og:type", content: "website" },
+
+    // Twitterカードメタタグ
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: ogpImageUrl },
   ];
 }
 
