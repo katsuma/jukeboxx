@@ -11,12 +11,6 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { addToQueue } = usePlaylist();
 
-  const addTestVideo = () => {
-    const testUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-    console.log("Adding test video:", testUrl);
-    addToQueue(testUrl);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -66,13 +60,6 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
           <p className="text-red-500 text-sm">{error}</p>
         )}
       </form>
-
-      <button
-        onClick={addTestVideo}
-        className="mt-4 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-      >
-        Add Test Video
-      </button>
     </div>
   );
 }

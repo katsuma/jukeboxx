@@ -20,8 +20,8 @@ export function YouTubePlayer({ className = "" }: YouTubePlayerProps) {
 
   // YouTube player options
   const opts = {
-    height: "360",
-    width: "640",
+    height: "100%",
+    width: "100%",
     playerVars: {
       // https://developers.google.com/youtube/player_parameters
       autoplay: 1,
@@ -69,24 +69,28 @@ export function YouTubePlayer({ className = "" }: YouTubePlayerProps) {
 
   if (!currentItem) {
     return (
-      <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg ${className}`} style={{ height: "360px", width: "640px" }}>
-        <p className="text-gray-500 dark:text-gray-400">
-          Please add videos to the queue
-        </p>
+      <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg ${className} relative`} style={{ paddingBottom: "75%" }}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <p className="text-gray-500 dark:text-gray-400">
+            Please add videos to the queue
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={className}>
-      <YouTube
-        videoId={currentItem.videoId}
-        opts={opts}
-        onReady={onReady}
-        onEnd={onEnd}
-        onError={onError}
-        className="rounded-lg overflow-hidden"
-      />
+    <div className={`${className} relative`} style={{ paddingBottom: "56.2%" }}>
+      <div className="absolute inset-0">
+        <YouTube
+          videoId={currentItem.videoId}
+          opts={opts}
+          onReady={onReady}
+          onEnd={onEnd}
+          onError={onError}
+          className="rounded-lg overflow-hidden w-full h-full"
+        />
+      </div>
     </div>
   );
 }
