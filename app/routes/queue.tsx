@@ -94,7 +94,7 @@ export default function Queue() {
                         });
                     }
                   }}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm"
+                  className="px-3 py-2 text-black dark:text-white border-1 border-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
                 >
                   Copy URL
                 </button>
