@@ -21,6 +21,20 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
+  {
+    rel: "shortcut icon",
+    href: `/favicon-darkmode.ico?v=${Date.now()}`,
+    media: "(prefers-color-scheme: dark)",
+  },
+  {
+    rel: "shortcut icon",
+    href: `/favicon.ico?v=${Date.now()}`,
+    media: "(prefers-color-scheme: light)",
+  },
+  {
+    rel: "shortcut icon",
+    href: "/favicon.ico",
+  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
