@@ -13,8 +13,8 @@ export function meta({ params, data }: Route.MetaArgs) {
   const queueName = data?.queueName || "Queue";
   const title = `${queueName} | Jukeboxx - Create a new queue`;
   const description = "A jukebox application that manages and plays YouTube videos in a queue";
-  const ogpImageUrl = "/ogp.png";
-  const baseUrl = "https://jukeboxx.vercel.app";
+  const baseUrl = "https://jukeboxx.club";
+  const ogpImageUrl = `${baseUrl}/ogp.png`;
   const url = `${baseUrl}/${params.queueId}`;
 
   return [
