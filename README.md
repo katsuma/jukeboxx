@@ -5,17 +5,20 @@ A jukebox application that manages and plays YouTube videos in a queue.
 ## Features
 
 - 🎵 Add YouTube videos to a queue for continuous playback
+- 🎬 Create multiple queues for different events or occasions
+- 🔗 Share queue URLs with friends to collaborate on playlists
 - 🔄 Real-time synchronization using Firebase Realtime Database
 - 📱 Share queue and playback status across multiple devices
 - 📋 Playback history management
 - 🎨 Modern UI with dark mode support
 
-
 ## How to Use
 
-1. Enter a YouTube URL to add it to the queue
-2. Videos will play automatically in sequence
-3. Access from multiple devices to share the same queue and playback status
+1. Create a new queue with a custom name
+2. Share the queue URL with friends
+3. Enter a YouTube URL to add it to the queue
+4. Videos will play automatically in sequence
+5. Everyone with the link can add songs and enjoy the music together
 
 ## Development Setup
 
