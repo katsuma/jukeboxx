@@ -71,8 +71,39 @@ export default function Queue() {
             <AddToQueueForm className="w-full" />
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
             <PlaylistQueue className="w-full" />
+
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+              <h3 className="text-lg font-semibold mb-2">Share This Queue</h3>
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  readOnly
+                  value={typeof window !== 'undefined' ? window.location.href : ''}
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg mr-2 bg-gray-50 dark:bg-gray-900 text-sm"
+                />
+                <button
+                  onClick={() => {
+                    if (typeof navigator !== 'undefined') {
+                      navigator.clipboard.writeText(window.location.href)
+                        .then(() => {
+                          alert('URL copied to clipboard!');
+                        })
+                        .catch(err => {
+                          console.error('Could not copy URL: ', err);
+                        });
+                    }
+                  }}
+                  className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm"
+                >
+                  Copy URL
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Share this URL with friends to collaborate on the same queue
+              </p>
+            </div>
           </div>
         </div>
         <div className="text-center text-gray-500 text-xs mt-4 py-2">
