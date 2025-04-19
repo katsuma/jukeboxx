@@ -1,5 +1,6 @@
 import type { Route } from "./+types/queue";
 import { PlaylistProvider } from "../contexts/PlaylistContext";
+import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { YouTubePlayer } from "../components/YouTubePlayer";
 import { AddToQueueForm } from "../components/AddToQueueForm";
@@ -59,15 +60,9 @@ export default function Queue() {
   return (
     <PlaylistProvider queueId={queueId}>
       <div className="container mx-auto px-4 py-8">
-        <header className="mb-8 text-center">
-          <img src="/logo.png" alt="Jukeboxx" className="h-24 w-24 inline-block mr-2" />
-          <h1 className="text-3xl font-bold mb-2">
-            Jukeboxx
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {queueName}
-          </p>
-        </header>
+        <Header>
+          {queueName}
+        </Header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
