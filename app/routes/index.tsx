@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { Header } from "../components/Header";
+import { Footer } from "../components/Footer";
 import { firebaseDB } from "../utils/firebase";
 import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "YouTube Jukebox - Create Queue" },
+    { title: "Jukeboxx - Create Queue" },
     { name: "description", content: "Create a new queue for your YouTube Jukebox" },
   ];
 }
@@ -42,12 +44,7 @@ export default function Index() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <header className="mb-12 text-center">
-        <h1 className="text-4xl font-bold mb-4">YouTube Jukebox</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400">
-          Create a queue and share it with your friends
-        </p>
-      </header>
+      <Header>Create a queue and share it with your friends</Header>
 
       <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-semibold mb-6">Create a New Queue</h2>
@@ -87,9 +84,7 @@ export default function Index() {
         </div>
       </div>
 
-      <div className="text-center text-gray-500 text-xs mt-8 py-2">
-        &copy; {new Date().getFullYear()} Ryo Katsuma. All rights reserved.
-      </div>
+      <Footer />
     </div>
   );
 }

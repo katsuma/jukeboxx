@@ -1,4 +1,4 @@
-# YouTube Jukebox
+# Jukeboxx
 
 A jukebox application that manages and plays YouTube videos in a queue.
 

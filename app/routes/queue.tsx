@@ -1,5 +1,7 @@
 import type { Route } from "./+types/queue";
 import { PlaylistProvider } from "../contexts/PlaylistContext";
+import { Header } from "../components/Header";
+import { Footer } from "../components/Footer";
 import { YouTubePlayer } from "../components/YouTubePlayer";
 import { AddToQueueForm } from "../components/AddToQueueForm";
 import { PlaylistQueue } from "../components/PlaylistQueue";
@@ -58,12 +60,9 @@ export default function Queue() {
   return (
     <PlaylistProvider queueId={queueId}>
       <div className="container mx-auto px-4 py-8">
-        <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">YouTube Jukebox</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {queueName}
-          </p>
-        </header>
+        <Header>
+          {queueName}
+        </Header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
@@ -95,7 +94,7 @@ export default function Queue() {
                         });
                     }
                   }}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm"
+                  className="px-3 py-2 text-black dark:text-white border-1 border-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
                 >
                   Copy URL
                 </button>
@@ -106,9 +105,8 @@ export default function Queue() {
             </div>
           </div>
         </div>
-        <div className="text-center text-gray-500 text-xs mt-4 py-2">
-          &copy; {new Date().getFullYear()} Ryo Katsuma. All rights reserved.
-        </div>
+
+        <Footer />
       </div>
     </PlaylistProvider>
   );
