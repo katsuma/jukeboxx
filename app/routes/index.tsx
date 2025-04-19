@@ -44,7 +44,10 @@ export default function Index() {
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="mb-12 text-center">
-        <h1 className="text-4xl font-bold mb-4">Jukeboxx</h1>
+        <img src="/logo.png" alt="Jukeboxx" className="h-24 w-24 inline-block mr-2" />
+        <h1 className="text-4xl font-bold mb-4">
+          Jukeboxx
+        </h1>
         <p className="text-xl text-gray-600 dark:text-gray-400">
           Create a queue and share it with your friends
         </p>
