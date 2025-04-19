@@ -25,16 +25,45 @@ interface PlaylistContextType {
 
   history: PlaylistItem[];
   recentHistory: PlaylistItem[];
+
+  queueId: string;
+  queueName: string;
 }
 
 const PlaylistContext = createContext<PlaylistContextType | undefined>(undefined);
 
-export function PlaylistProvider({ children }: { children: ReactNode }) {
+export function PlaylistProvider({ children, queueId }: { children: ReactNode, queueId: string }) {
+  const [queueName, setQueueName] = useState<string>("");
   const [queue, setQueue] = useState<PlaylistItem[]>([]);
   const [currentItem, setCurrentItem] = useState<PlaylistItem | null>(null);
   const [history, setHistory] = useState<PlaylistItem[]>([]);
 
   const recentHistory = history.slice(0, 3);
+
+  // Fetch queue metadata when queueId changes
+  useEffect(() => {
+    const fetchQueueMetadata = async () => {
+      if (!firebaseDB.isInitialized()) {
+        console.log('Firebase is not initialized. Using local state only.');
+        return;
+      }
+
+      try {
+        const metadata = await firebaseDB.getQueueMetadata(queueId);
+        if (metadata) {
+          setQueueName(metadata.name);
+        } else {
+          console.warn(`No metadata found for queue ${queueId}`);
+          setQueueName("Unnamed Queue");
+        }
+      } catch (error) {
+        console.error('Error fetching queue metadata:', error);
+        setQueueName("Unnamed Queue");
+      }
+    };
+
+    fetchQueueMetadata();
+  }, [queueId]);
 
   useEffect(() => {
     if (!firebaseDB.isInitialized()) {
@@ -42,23 +71,23 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    console.log('Setting up Firebase listeners...');
+    console.log(`Setting up Firebase listeners for queue ${queueId}...`);
 
     try {
-      const unsubscribeQueue = firebaseDB.onQueueChanged((items) => {
+      const unsubscribeQueue = firebaseDB.onQueueChanged(queueId, (items) => {
         setQueue(items);
       });
 
-      const unsubscribeCurrent = firebaseDB.onCurrentItemChanged((item) => {
+      const unsubscribeCurrent = firebaseDB.onCurrentItemChanged(queueId, (item) => {
         setCurrentItem(item);
       });
 
-      const unsubscribeHistory = firebaseDB.onHistoryChanged((items) => {
+      const unsubscribeHistory = firebaseDB.onHistoryChanged(queueId, (items) => {
         setHistory(items);
       });
 
       return () => {
-        console.log('Cleaning up Firebase listeners');
+        console.log(`Cleaning up Firebase listeners for queue ${queueId}`);
         unsubscribeQueue();
         unsubscribeCurrent();
         unsubscribeHistory();
@@ -68,7 +97,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       console.log('Falling back to local state management');
       return () => {};
     }
-  }, []);
+  }, [queueId]);
 
   const addToQueue = async (url: string) => {
     console.log('Adding to queue:', url);
@@ -102,8 +131,8 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
 
       if (firebaseDB.isInitialized()) {
         try {
-          console.log('Adding to Firebase queue:', updatedItem.title);
-          await firebaseDB.addToQueue(updatedItem);
+          console.log(`Adding to Firebase queue ${queueId}:`, updatedItem.title);
+          await firebaseDB.addToQueue(queueId, updatedItem);
         } catch (error) {
           console.error('Firebase addToQueue failed, falling back to local state:', error);
           setQueue((prev) => [...prev, updatedItem]);
@@ -117,8 +146,8 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
 
       if (firebaseDB.isInitialized()) {
         try {
-          console.log('Adding default item to Firebase queue');
-          await firebaseDB.addToQueue(tempItem);
+          console.log(`Adding default item to Firebase queue ${queueId}`);
+          await firebaseDB.addToQueue(queueId, tempItem);
         } catch (firebaseError) {
           console.error('Firebase addToQueue failed, falling back to local state:', firebaseError);
           setQueue((prev) => [...prev, tempItem]);
@@ -133,8 +162,8 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
   const removeFromQueue = (id: string) => {
     if (firebaseDB.isInitialized()) {
       try {
-        console.log('Removing from Firebase queue:', id);
-        firebaseDB.removeFromQueue(id).catch(error => {
+        console.log(`Removing from Firebase queue ${queueId}:`, id);
+        firebaseDB.removeFromQueue(queueId, id).catch(error => {
           console.error('Firebase removeFromQueue failed, falling back to local state:', error);
           setQueue((prev) => prev.filter((item) => item.id !== id));
         });
@@ -151,8 +180,8 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
   const clearQueue = () => {
     if (firebaseDB.isInitialized()) {
       try {
-        console.log('Clearing Firebase queue');
-        firebaseDB.clearQueue().catch(error => {
+        console.log(`Clearing Firebase queue ${queueId}`);
+        firebaseDB.clearQueue(queueId).catch(error => {
           console.error('Firebase clearQueue failed, falling back to local state:', error);
           setQueue([]);
         });
@@ -172,8 +201,8 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
     if (currentItem) {
       if (firebaseDB.isInitialized()) {
         try {
-          console.log('Adding current item to Firebase history:', currentItem.title);
-          firebaseDB.addToHistory(currentItem).catch(error => {
+          console.log(`Adding current item to Firebase history for queue ${queueId}:`, currentItem.title);
+          firebaseDB.addToHistory(queueId, currentItem).catch(error => {
             console.error('Firebase addToHistory failed, falling back to local state:', error);
             setHistory((prev) => [currentItem, ...prev]);
           });
@@ -193,14 +222,14 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
 
       if (firebaseDB.isInitialized()) {
         try {
-          console.log('Updating current item in Firebase:', nextItem.title);
-          firebaseDB.updateCurrentItem(nextItem).catch(error => {
+          console.log(`Updating current item in Firebase for queue ${queueId}:`, nextItem.title);
+          firebaseDB.updateCurrentItem(queueId, nextItem).catch(error => {
             console.error('Firebase updateCurrentItem failed, falling back to local state:', error);
             setCurrentItem(nextItem);
           });
 
-          console.log('Removing item from Firebase queue:', nextItem.id);
-          firebaseDB.removeFromQueue(nextItem.id).catch(error => {
+          console.log(`Removing item from Firebase queue ${queueId}:`, nextItem.id);
+          firebaseDB.removeFromQueue(queueId, nextItem.id).catch(error => {
             console.error('Firebase removeFromQueue failed, falling back to local state:', error);
             setQueue((prev) => prev.slice(1));
           });
@@ -218,7 +247,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       console.log('No items in queue, setting current item to null');
       if (firebaseDB.isInitialized()) {
         try {
-          firebaseDB.updateCurrentItem(null).catch(error => {
+          firebaseDB.updateCurrentItem(queueId, null).catch(error => {
             console.error('Firebase updateCurrentItem(null) failed, falling back to local state:', error);
             setCurrentItem(null);
           });
@@ -242,8 +271,8 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
 
       if (firebaseDB.isInitialized()) {
         try {
-          console.log('Updating current item in Firebase with new title');
-          firebaseDB.updateCurrentItem(updatedItem).catch(error => {
+          console.log(`Updating current item in Firebase for queue ${queueId} with new title`);
+          firebaseDB.updateCurrentItem(queueId, updatedItem).catch(error => {
             console.error('Firebase updateCurrentItem failed, falling back to local state:', error);
             setCurrentItem(updatedItem);
           });
@@ -274,6 +303,8 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
     updateCurrentItemInfo,
     history,
     recentHistory,
+    queueId,
+    queueName
   };
 
   return (

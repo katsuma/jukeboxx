@@ -24,9 +24,6 @@ const checkEnvVars = () => {
 
 let app: any;
 let database: any;
-let queueRef: any;
-let currentItemRef: any;
-let historyRef: any;
 let isFirebaseInitialized = false;
 
 if (checkEnvVars()) {
@@ -43,10 +40,6 @@ if (checkEnvVars()) {
 
     app = initializeApp(firebaseConfig);
     database = getDatabase(app);
-
-    queueRef = ref(database, 'queue');
-    currentItemRef = ref(database, 'currentItem');
-    historyRef = ref(database, 'history');
 
     isFirebaseInitialized = true;
     console.log('Firebase initialized successfully with config:', {
@@ -66,81 +59,190 @@ if (checkEnvVars()) {
   console.warn('Firebase is not initialized due to missing environment variables. Using local state only.');
 }
 
+// Helper function to get references for a specific queue
+const getQueueRefs = (queueId: string) => {
+  if (!isFirebaseInitialized || !database) {
+    return null;
+  }
+
+  return {
+    queueRef: ref(database, `queues/${queueId}/queue`),
+    currentItemRef: ref(database, `queues/${queueId}/currentItem`),
+    historyRef: ref(database, `queues/${queueId}/history`),
+    metaRef: ref(database, `queues/${queueId}/meta`)
+  };
+};
+
 const dummyUnsubscribe = () => {};
 
+// Interface for queue metadata
+export interface QueueMetadata {
+  name: string;
+  createdAt: Date;
+}
+
 export const firebaseDB = {
-  onQueueChanged: (callback: (items: PlaylistItem[]) => void) => {
+  // Create a new queue with the given name
+  createQueue: async (name: string): Promise<string> => {
+    if (!isFirebaseInitialized) {
+      console.warn('Firebase not initialized. Cannot create queue.');
+      return crypto.randomUUID();
+    }
+
+    try {
+      const queueId = crypto.randomUUID();
+      const refs = getQueueRefs(queueId);
+
+      if (!refs) {
+        throw new Error('Failed to get queue references');
+      }
+
+      const metadata: QueueMetadata = {
+        name,
+        createdAt: new Date()
+      };
+
+      await set(refs.metaRef, metadata);
+      console.log('Created new queue:', queueId, 'with name:', name);
+
+      return queueId;
+    } catch (error) {
+      console.error('Error creating queue:', error);
+      throw error;
+    }
+  },
+
+  // Get queue metadata
+  getQueueMetadata: async (queueId: string): Promise<QueueMetadata | null> => {
+    if (!isFirebaseInitialized) {
+      console.warn('Firebase not initialized. Cannot get queue metadata.');
+      return null;
+    }
+
+    try {
+      const refs = getQueueRefs(queueId);
+
+      if (!refs) {
+        throw new Error('Failed to get queue references');
+      }
+
+      return new Promise<QueueMetadata | null>((resolve) => {
+        onValue(refs.metaRef, (snapshot) => {
+          const data = snapshot.val();
+          resolve(data);
+        }, { onlyOnce: true });
+      });
+    } catch (error) {
+      console.error('Error getting queue metadata:', error);
+      return null;
+    }
+  },
+
+  onQueueChanged: (queueId: string, callback: (items: PlaylistItem[]) => void) => {
     if (!isFirebaseInitialized) {
       callback([]);
       return dummyUnsubscribe;
     }
 
-    return onValue(queueRef, (snapshot) => {
+    const refs = getQueueRefs(queueId);
+
+    if (!refs) {
+      callback([]);
+      return dummyUnsubscribe;
+    }
+
+    return onValue(refs.queueRef, (snapshot) => {
       const data = snapshot.val();
       const items: PlaylistItem[] = data ? Object.values(data) : [];
-      console.log('Queue updated from Firebase:', items.length, 'items');
+      console.log(`Queue ${queueId} updated from Firebase:`, items.length, 'items');
       callback(items);
     });
   },
 
-  onCurrentItemChanged: (callback: (item: PlaylistItem | null) => void) => {
+  onCurrentItemChanged: (queueId: string, callback: (item: PlaylistItem | null) => void) => {
     if (!isFirebaseInitialized) {
       callback(null);
       return dummyUnsubscribe;
     }
 
-    return onValue(currentItemRef, (snapshot) => {
+    const refs = getQueueRefs(queueId);
+
+    if (!refs) {
+      callback(null);
+      return dummyUnsubscribe;
+    }
+
+    return onValue(refs.currentItemRef, (snapshot) => {
       const data = snapshot.val();
-      console.log('Current item updated from Firebase:', data?.title || 'none');
+      console.log(`Current item for queue ${queueId} updated from Firebase:`, data?.title || 'none');
       callback(data || null);
     });
   },
 
-  onHistoryChanged: (callback: (items: PlaylistItem[]) => void) => {
+  onHistoryChanged: (queueId: string, callback: (items: PlaylistItem[]) => void) => {
     if (!isFirebaseInitialized) {
       callback([]);
       return dummyUnsubscribe;
     }
 
-    return onValue(historyRef, (snapshot) => {
+    const refs = getQueueRefs(queueId);
+
+    if (!refs) {
+      callback([]);
+      return dummyUnsubscribe;
+    }
+
+    return onValue(refs.historyRef, (snapshot) => {
       const data = snapshot.val();
       const items: PlaylistItem[] = data ? Object.values(data) : [];
-      console.log('History updated from Firebase:', items.length, 'items');
+      console.log(`History for queue ${queueId} updated from Firebase:`, items.length, 'items');
       callback(items);
     });
   },
 
-  addToQueue: async (item: PlaylistItem) => {
+  addToQueue: async (queueId: string, item: PlaylistItem) => {
     if (!isFirebaseInitialized) {
       console.warn('Firebase not initialized. Cannot add to queue.');
       return;
     }
 
+    const refs = getQueueRefs(queueId);
+
+    if (!refs) {
+      throw new Error('Failed to get queue references');
+    }
+
     try {
-      console.log('Adding to Firebase queue:', item.title);
-      await push(queueRef, item);
+      console.log(`Adding to Firebase queue ${queueId}:`, item.title);
+      await push(refs.queueRef, item);
     } catch (error) {
       console.error('Error adding to queue:', error);
       throw error;
     }
   },
 
-  removeFromQueue: async (id: string) => {
+  removeFromQueue: async (queueId: string, id: string) => {
     if (!isFirebaseInitialized) {
       console.warn('Firebase not initialized. Cannot remove from queue.');
       return;
     }
 
+    const refs = getQueueRefs(queueId);
+
+    if (!refs) {
+      throw new Error('Failed to get queue references');
+    }
+
     try {
-      console.log('Removing from Firebase queue:', id);
+      console.log(`Removing from Firebase queue ${queueId}:`, id);
       return new Promise<void>((resolve) => {
-        onValue(queueRef, (snapshot) => {
+        onValue(refs.queueRef, (snapshot) => {
           const data = snapshot.val();
 
           if (data) {
             Object.entries(data).forEach(([key, value]) => {
               if ((value as PlaylistItem).id === id) {
-                remove(ref(database, `queue/${key}`));
+                remove(ref(database, `queues/${queueId}/queue/${key}`));
               }
             });
           }
@@ -153,31 +255,43 @@ export const firebaseDB = {
     }
   },
 
-  updateCurrentItem: async (item: PlaylistItem | null) => {
+  updateCurrentItem: async (queueId: string, item: PlaylistItem | null) => {
     if (!isFirebaseInitialized) {
       console.warn('Firebase not initialized. Cannot update current item.');
       return;
     }
 
+    const refs = getQueueRefs(queueId);
+
+    if (!refs) {
+      throw new Error('Failed to get queue references');
+    }
+
     try {
-      console.log('Updating current item in Firebase:', item?.title || 'null');
-      await set(currentItemRef, item);
+      console.log(`Updating current item in Firebase queue ${queueId}:`, item?.title || 'null');
+      await set(refs.currentItemRef, item);
     } catch (error) {
       console.error('Error updating current item:', error);
       throw error;
     }
   },
 
-  addToHistory: async (item: PlaylistItem) => {
+  addToHistory: async (queueId: string, item: PlaylistItem) => {
     if (!isFirebaseInitialized) {
       console.warn('Firebase not initialized. Cannot add to history.');
       return;
     }
 
+    const refs = getQueueRefs(queueId);
+
+    if (!refs) {
+      throw new Error('Failed to get queue references');
+    }
+
     try {
-      console.log('Adding to Firebase history:', item.title);
+      console.log(`Adding to Firebase history for queue ${queueId}:`, item.title);
       return new Promise<void>((resolve) => {
-        onValue(historyRef, (snapshot) => {
+        onValue(refs.historyRef, (snapshot) => {
           const data = snapshot.val() || {};
 
           const newData = { [item.id]: item, ...data };
@@ -190,7 +304,7 @@ export const firebaseDB = {
             });
           }
 
-          set(historyRef, newData).then(() => resolve());
+          set(refs.historyRef, newData).then(() => resolve());
         }, { onlyOnce: true });
       });
     } catch (error) {
@@ -199,15 +313,21 @@ export const firebaseDB = {
     }
   },
 
-  clearQueue: async () => {
+  clearQueue: async (queueId: string) => {
     if (!isFirebaseInitialized) {
       console.warn('Firebase not initialized. Cannot clear queue.');
       return;
     }
 
+    const refs = getQueueRefs(queueId);
+
+    if (!refs) {
+      throw new Error('Failed to get queue references');
+    }
+
     try {
-      console.log('Clearing Firebase queue');
-      await set(queueRef, null);
+      console.log(`Clearing Firebase queue ${queueId}`);
+      await set(refs.queueRef, null);
     } catch (error) {
       console.error('Error clearing queue:', error);
       throw error;
