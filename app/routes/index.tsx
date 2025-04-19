@@ -7,8 +7,8 @@ import type { Route } from "./+types/home";
 export function meta({}: Route.MetaArgs) {
   const title = "Jukeboxx - Create a new queue";
   const description = "Create a new queue for your YouTube Jukebox";
-  const ogpImageUrl = "/ogp.png";
-  const url = "https://jukeboxx.vercel.app/"; // 本番環境のURLに置き換えてください
+  const ogpImageUrl = "https://jukeboxx.club/ogp.png";
+  const url = "https://jukeboxx.club/";
 
   return [
     // 基本メタタグ
