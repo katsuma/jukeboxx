@@ -3,7 +3,7 @@ import YouTube from "react-youtube";
 import type { YouTubeEvent, YouTubePlayer as YTPlayer } from "react-youtube";
 import { usePlaylist } from "../contexts/PlaylistContext";
 
-// YouTubeプレーヤーから動画情報を取得するための型定義
+// Type definition for retrieving video data from YouTube player
 interface YouTubePlayerData {
   title?: string;
   author?: string;
@@ -18,7 +18,7 @@ export function YouTubePlayer({ className = "" }: YouTubePlayerProps) {
   const { currentItem, playNext, updateCurrentItemInfo } = usePlaylist();
   const playerRef = useRef<YTPlayer | null>(null);
 
-  // YouTubeプレーヤーのオプション
+  // YouTube player options
   const opts = {
     height: "360",
     width: "640",
@@ -30,37 +30,37 @@ export function YouTubePlayer({ className = "" }: YouTubePlayerProps) {
     },
   };
 
-  // プレーヤーの準備完了時
+  // When player is ready
   const onReady = (event: YouTubeEvent) => {
     playerRef.current = event.target;
 
-    // 動画情報を取得して更新
+    // Get and update video information
     if (currentItem) {
       try {
-        // YouTubeプレーヤーから動画タイトルを取得
+        // Get video title from YouTube player
         const videoData = event.target.getVideoData() as YouTubePlayerData;
         if (videoData && videoData.title) {
-          // タイトルが取得できた場合は更新
+          // Update title if available
           updateCurrentItemInfo(videoData.title);
         }
       } catch (error) {
-        console.error('動画情報の取得に失敗しました:', error);
+        console.error('Failed to get video information:', error);
       }
     }
   };
 
-  // 動画再生終了時
+  // When video playback ends
   const onEnd = () => {
     playNext();
   };
 
-  // エラー発生時
+  // When an error occurs
   const onError = () => {
     console.error("YouTube player error occurred");
-    playNext(); // エラーが発生した場合も次の曲に移動
+    playNext(); // Move to next video even if an error occurs
   };
 
-  // 現在のアイテムが変更されたときにプレーヤーをリセット
+  // Reset player when current item changes
   useEffect(() => {
     if (playerRef.current && !currentItem) {
       playerRef.current.stopVideo();
@@ -71,7 +71,7 @@ export function YouTubePlayer({ className = "" }: YouTubePlayerProps) {
     return (
       <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg ${className}`} style={{ height: "360px", width: "640px" }}>
         <p className="text-gray-500 dark:text-gray-400">
-          キューに曲を追加してください
+          Please add videos to the queue
         </p>
       </div>
     );

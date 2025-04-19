@@ -10,12 +10,6 @@ A jukebox application that manages and plays YouTube videos in a queue.
 - 📋 Playback history management
 - 🎨 Modern UI with dark mode support
 
-## Technology Stack
-
-- React + TypeScript
-- Firebase Realtime Database
-- YouTube API
-- TailwindCSS
 
 ## How to Use
 

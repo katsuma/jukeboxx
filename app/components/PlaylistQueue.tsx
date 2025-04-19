@@ -8,9 +8,9 @@ interface PlaylistQueueProps {
 export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
   const { queue, recentHistory, removeFromQueue, currentItem } = usePlaylist();
 
-  // 日付をフォーマットする関数
+  // Function to format date
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("ja-JP", {
+    return new Intl.DateTimeFormat("en-US", {
       month: "numeric",
       day: "numeric",
       hour: "numeric",
@@ -18,9 +18,9 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
     }).format(date);
   };
 
-  // キューアイテムをレンダリングする関数
+  // Function to render queue item
   const renderQueueItem = (item: PlaylistItem, index: number, isHistory = false) => {
-    // サムネイルURLを使用
+    // Use thumbnail URL
     const thumbnailUrl = item.thumbnail;
 
     return (
@@ -35,13 +35,13 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
         <div className="flex-shrink-0 w-16 h-12 mr-3">
           <img
             src={thumbnailUrl}
-            alt="サムネイル"
+            alt="Thumbnail"
             className="w-full h-full object-cover rounded"
           />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm truncate">
-            {isHistory ? "再生済み: " : `${index + 1}. `}
+            {isHistory ? "Played: " : `${index + 1}. `}
             {item.title}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -52,7 +52,7 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
           <button
             onClick={() => removeFromQueue(item.id)}
             className="ml-2 p-1 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400"
-            aria-label="キューから削除"
+            aria-label="Remove from queue"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -74,32 +74,32 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
 
   return (
     <div className={`${className}`}>
-      {/* 現在再生中 */}
+      {/* Now Playing */}
       {currentItem && (
         <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2">再生中</h3>
+          <h3 className="text-lg font-semibold mb-2">Now Playing</h3>
           <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg">
             {renderQueueItem(currentItem, 0)}
           </div>
         </div>
       )}
 
-      {/* 再生履歴 */}
+      {/* Recently Played */}
       {recentHistory.length > 0 && (
         <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2">最近再生した曲</h3>
+          <h3 className="text-lg font-semibold mb-2">Recently Played</h3>
           <div className="space-y-2">
             {recentHistory.map((item) => renderQueueItem(item, 0, true))}
           </div>
         </div>
       )}
 
-      {/* キュー */}
+      {/* Queue */}
       <div>
-        <h3 className="text-lg font-semibold mb-2">再生キュー</h3>
+        <h3 className="text-lg font-semibold mb-2">Play Queue</h3>
         {queue.length === 0 ? (
           <p className="text-gray-500 dark:text-gray-400 p-2">
-            キューに曲がありません
+            No videos in queue
           </p>
         ) : (
           <div className="space-y-2">

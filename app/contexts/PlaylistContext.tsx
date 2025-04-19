@@ -84,7 +84,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       id: crypto.randomUUID(),
       url,
       videoId,
-      title: `動画を読み込み中... (${videoId})`,
+      title: `Loading video... (${videoId})`,
       thumbnail: `https://img.youtube.com/vi/${videoId}/default.jpg`,
       addedAt: new Date(),
     };
@@ -113,7 +113,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
         setQueue((prev) => [...prev, updatedItem]);
       }
     } catch (error) {
-      console.error('動画情報の取得に失敗しました:', error);
+      console.error('Failed to fetch video information:', error);
 
       if (firebaseDB.isInitialized()) {
         try {

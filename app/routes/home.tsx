@@ -7,7 +7,7 @@ import { PlaylistQueue } from "../components/PlaylistQueue";
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "YouTube Jukebox" },
-    { name: "description", content: "YouTubeの曲をキューで管理して再生するジュークボックス" },
+    { name: "description", content: "A jukebox application that manages and plays YouTube videos in a queue" },
   ];
 }
 
@@ -18,7 +18,7 @@ export default function Home() {
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-bold mb-2">YouTube Jukebox</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            YouTubeの曲をキューで管理して再生するジュークボックス
+            Queue-based YouTube Music Player
           </p>
         </header>
 

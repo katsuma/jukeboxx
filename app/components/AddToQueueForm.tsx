@@ -13,7 +13,7 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
 
   const addTestVideo = () => {
     const testUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-    console.log("テスト動画を追加します:", testUrl);
+    console.log("Adding test video:", testUrl);
     addToQueue(testUrl);
   };
 
@@ -21,21 +21,21 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
     e.preventDefault();
 
     const inputValue = inputRef.current?.value || '';
-    console.log("フォーム送信: URL =", inputValue);
+    console.log("Form submission: URL =", inputValue);
 
     if (!inputValue.trim()) {
-      console.log("エラー: URLが空です");
-      setError("URLを入力してください");
+      console.log("Error: URL is empty");
+      setError("Please enter a URL");
       return;
     }
 
     if (!isValidYouTubeUrl(inputValue)) {
-      console.log("エラー: 無効なYouTube URL");
-      setError("有効なYouTube URLを入力してください");
+      console.log("Error: Invalid YouTube URL");
+      setError("Please enter a valid YouTube URL");
       return;
     }
 
-    console.log("URLは有効です。キューに追加します:", inputValue);
+    console.log("URL is valid. Adding to queue:", inputValue);
 
     addToQueue(inputValue);
 
@@ -52,14 +52,14 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
           <input
             ref={inputRef}
             type="text"
-            placeholder="YouTube URL を入力"
+            placeholder="Enter YouTube URL"
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
           />
           <button
             type="submit"
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            キューに追加
+            Add to Queue
           </button>
         </div>
         {error && (
@@ -71,7 +71,7 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
         onClick={addTestVideo}
         className="mt-4 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
       >
-        テスト動画を追加
+        Add Test Video
       </button>
     </div>
   );
