@@ -89,9 +89,11 @@ export default function Index() {
           </button>
         </Form>
 
-        <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          <p>Create a queue, add YouTube videos, and share the URL with friends.</p>
-          <p>Everyone with the link can add songs and enjoy the music together!</p>
+        <div className="mt-8 text-sm text-gray-500 dark:text-gray-400">
+          <p>
+            Create a queue, add YouTube videos, and share the URL with friends.
+            Everyone with the link can add songs and enjoy the music together!
+          </p>
         </div>
       </div>
 
