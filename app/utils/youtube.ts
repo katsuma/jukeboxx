@@ -10,7 +10,7 @@ export function extractYouTubeVideoId(url: string): string | null {
 
   // Create and parse URL object
   let videoId: string | null = null;
-  const allowedViewerHosts = ['youtube.com', 'www.youtube.com'];
+  const allowedViewerHosts = ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com'];
 
   try {
     const urlObj = new URL(url);
