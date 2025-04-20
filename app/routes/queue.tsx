@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import { firebaseDB } from "../utils/firebase";
 
 export function meta({ params, data }: Route.MetaArgs) {
-  // loaderから取得したqueueNameを使用
   const queueName = data?.queueName || "Queue";
   const title = `${queueName} | Jukeboxx - Create a new queue`;
   const description = "A jukebox application that manages and plays YouTube videos in a queue";
@@ -18,18 +17,15 @@ export function meta({ params, data }: Route.MetaArgs) {
   const url = `${baseUrl}/${params.queueId}`;
 
   return [
-    // 基本メタタグ
     { title },
     { name: "description", content: description },
 
-    // OGP（Open Graph Protocol）メタタグ
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:image", content: ogpImageUrl },
     { property: "og:url", content: url },
     { property: "og:type", content: "website" },
 
-    // Twitterカードメタタグ
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
@@ -42,7 +38,6 @@ export async function loader({ params }: Route.LoaderArgs) {
   let queueName = "Queue";
 
   try {
-    // サーバーサイドでqueueNameを取得
     const metadata = await firebaseDB.getQueueMetadata(queueId);
     if (metadata && metadata.name) {
       queueName = metadata.name;
@@ -59,9 +54,7 @@ export default function Queue() {
   const [queueId, setQueueId] = useState<string>("");
 
   useEffect(() => {
-    // Client-side only code
     if (typeof window !== 'undefined') {
-      // Get queueId from URL in client-side only
       const pathQueueId = window.location.pathname.substring(1);
       setQueueId(pathQueueId);
 
@@ -86,7 +79,7 @@ export default function Queue() {
 
       fetchQueueMetadata();
     }
-  }, []); // Empty dependency array to run only once
+  }, []);
 
   if (!queueId) {
     return <div>Invalid queue ID</div>;

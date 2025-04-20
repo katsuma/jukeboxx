@@ -11,18 +11,15 @@ export function meta({}: Route.MetaArgs) {
   const url = "https://jukeboxx.club/";
 
   return [
-    // 基本メタタグ
     { title },
     { name: "description", content: description },
 
-    // OGP（Open Graph Protocol）メタタグ
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:image", content: ogpImageUrl },
     { property: "og:url", content: url },
     { property: "og:type", content: "website" },
 
-    // Twitterカードメタタグ
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
@@ -50,7 +47,6 @@ export default function Index() {
       const queueId = await firebaseDB.createQueue(queueName.trim());
       console.log("Created queue:", queueId);
 
-      // Redirect to the queue page (client-side only)
       if (typeof window !== 'undefined') {
         window.location.href = `/${queueId}`;
       }
