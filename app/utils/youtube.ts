@@ -10,21 +10,25 @@ export function extractYouTubeVideoId(url: string): string | null {
 
   // Create and parse URL object
   let videoId: string | null = null;
+  const allowedViewerHosts = ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com'];
 
   try {
     const urlObj = new URL(url);
+    const hostname = urlObj.hostname;
+    const pathname = urlObj.pathname;
+    const searchParams = urlObj.searchParams;
 
     // youtube.com/watch?v=VIDEO_ID format
-    if (urlObj.hostname.includes('youtube.com') && urlObj.pathname === '/watch') {
-      videoId = urlObj.searchParams.get('v');
+    if (allowedViewerHosts.includes(hostname) && pathname === '/watch') {
+      videoId = searchParams.get('v');
     }
     // youtu.be/VIDEO_ID format
-    else if (urlObj.hostname === 'youtu.be') {
-      videoId = urlObj.pathname.substring(1);
+    else if (hostname === 'youtu.be') {
+      videoId = pathname.substring(1);
     }
     // youtube.com/embed/VIDEO_ID format
-    else if (urlObj.hostname.includes('youtube.com') && urlObj.pathname.startsWith('/embed/')) {
-      videoId = urlObj.pathname.split('/embed/')[1];
+    else if (allowedViewerHosts.includes(hostname) && pathname.startsWith('/embed/')) {
+      videoId = pathname.split('/embed/')[1];
     }
 
     return videoId;
