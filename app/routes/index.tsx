@@ -2,9 +2,9 @@ import { Form, useActionData, useNavigation, redirect } from "react-router";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { firebaseDB } from "../utils/firebase";
-import type { Route } from "./+types/home";
+import type { Route } from "./+types/index";
 
-export async function action({ request }: Route.ActionArgs): Promise<Route.ActionData | Response> {
+export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const queueName = formData.get("queueName") as string;
 
@@ -50,7 +50,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Index() {
-  const actionData = useActionData<Route.ActionData>();
+  const actionData = useActionData();
   const navigation = useNavigation();
   const isCreating = navigation.state === "submitting";
 
