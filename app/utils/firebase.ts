@@ -217,9 +217,8 @@ export const firebaseDB = {
 
       // No need to convert addedAt as it's already a timestamp in milliseconds
       // Just use the item as is
-      const itemWithTimestamp = item;
 
-      await push(refs.queueRef, itemWithTimestamp);
+      await push(refs.queueRef, item);
     } catch (error) {
       console.error('Error adding to queue:', error);
       throw error;
