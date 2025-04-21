@@ -34,6 +34,8 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
   const renderQueueItem = (item: PlaylistItem, index: number, isHistory = false) => {
     // Use thumbnail URL
     const thumbnailUrl = item.thumbnail;
+    // Create YouTube video URL
+    const youtubeUrl = `https://www.youtube.com/watch?v=${item.videoId}`;
 
     return (
       <div
@@ -45,16 +47,29 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
         }`}
       >
         <div className="flex-shrink-0 w-16 h-12 mr-3">
-          <img
-            src={thumbnailUrl}
-            alt="Thumbnail"
-            className="w-full h-full object-cover rounded"
-          />
+          <a
+            href={youtubeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full h-full transition-opacity hover:opacity-80"
+          >
+            <img
+              src={thumbnailUrl}
+              alt="Thumbnail"
+              className="w-full h-full object-cover rounded"
+            />
+          </a>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm truncate">
-            {isHistory ? "Played: " : `${index + 1}. `}
-            {item.title}
+            <a
+              href={youtubeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-900 dark:text-gray-100 hover:text-gray-500 dark:hover:text-gray-300 transition-all border-b border-transparent hover:border-gray-500 dark:hover:border-gray-300"
+            >
+              {item.title}
+            </a>
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             {formatDate(item.addedAt)}
@@ -112,20 +127,8 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
             </label>
           </div>
           <div className="space-y-2">
-            {/* Sort history items by addedAt timestamp in descending order (newest first) */}
-            {[...recentHistory]
-              .sort((a, b) => {
-                // Only compare if both are numbers
-                if (typeof a.addedAt === 'number' && typeof b.addedAt === 'number') {
-                  return b.addedAt - a.addedAt;
-                }
-                // If only one is a number, prioritize the number (newer format)
-                if (typeof a.addedAt === 'number') return -1;
-                if (typeof b.addedAt === 'number') return 1;
-                // If neither is a number, don't change order
-                return 0;
-              })
-              .map((item) => renderQueueItem(item, 0, true))}
+            {/* recentHistory is already sorted in PlaylistContext */}
+            {recentHistory.map((item) => renderQueueItem(item, 0, true))}
           </div>
         </div>
       )}

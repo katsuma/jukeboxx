@@ -41,7 +41,21 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
   const [history, setHistory] = useState<PlaylistItem[]>([]);
   const [showAllHistory, setShowAllHistory] = useState<boolean>(false);
 
-  const recentHistory = showAllHistory ? history : history.slice(0, 3);
+  // Sort history by addedAt (newest first), handling both number and legacy formats
+  const sortedHistory = [...history].sort((a, b) => {
+    // Only compare if both are numbers
+    if (typeof a.addedAt === 'number' && typeof b.addedAt === 'number') {
+      return b.addedAt - a.addedAt;
+    }
+    // If only one is a number, prioritize the number (newer format)
+    if (typeof a.addedAt === 'number') return -1;
+    if (typeof b.addedAt === 'number') return 1;
+    // If neither is a number, don't change order
+    return 0;
+  });
+
+  // Get all or just the first 3 items based on showAllHistory
+  const recentHistory = showAllHistory ? sortedHistory : sortedHistory.slice(0, 3);
 
   // Fetch queue metadata when queueId changes
   useEffect(() => {
