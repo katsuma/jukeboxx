@@ -6,16 +6,28 @@ interface PlaylistQueueProps {
 }
 
 export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
-  const { queue, recentHistory, removeFromQueue, currentItem } = usePlaylist();
+  const { queue, recentHistory, removeFromQueue, currentItem, showAllHistory, toggleShowAllHistory } = usePlaylist();
 
-  // Function to format date
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "numeric",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-    }).format(date);
+  // Function to format timestamp - only handles number format, ignores legacy formats
+  const formatDate = (timestamp: any) => {
+    // Only process if it's a number (milliseconds timestamp)
+    if (typeof timestamp === 'number') {
+      try {
+        const date = new Date(timestamp);
+        return new Intl.DateTimeFormat("en-US", {
+          month: "numeric",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+        }).format(date);
+      } catch (error) {
+        console.error("Error formatting date:", error);
+        return "Date error";
+      }
+    }
+
+    // For all other formats, return Unknown date
+    return "Unknown date";
   };
 
   // Function to render queue item
@@ -87,9 +99,33 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
       {/* Recently Played */}
       {recentHistory.length > 0 && (
         <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2">Recently Played</h3>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-lg font-semibold">Recently Played</h3>
+            <label className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+              <input
+                type="checkbox"
+                checked={showAllHistory}
+                onChange={toggleShowAllHistory}
+                className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              Show all history
+            </label>
+          </div>
           <div className="space-y-2">
-            {recentHistory.map((item) => renderQueueItem(item, 0, true))}
+            {/* Sort history items by addedAt timestamp in descending order (newest first) */}
+            {[...recentHistory]
+              .sort((a, b) => {
+                // Only compare if both are numbers
+                if (typeof a.addedAt === 'number' && typeof b.addedAt === 'number') {
+                  return b.addedAt - a.addedAt;
+                }
+                // If only one is a number, prioritize the number (newer format)
+                if (typeof a.addedAt === 'number') return -1;
+                if (typeof b.addedAt === 'number') return 1;
+                // If neither is a number, don't change order
+                return 0;
+              })
+              .map((item) => renderQueueItem(item, 0, true))}
           </div>
         </div>
       )}
