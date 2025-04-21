@@ -10,7 +10,7 @@ export interface PlaylistItem {
   videoId: string;
   title: string;
   thumbnail: string;
-  addedAt: Date;
+  addedAt: number; // Timestamp in milliseconds
 }
 
 interface PlaylistContextType {
@@ -25,6 +25,8 @@ interface PlaylistContextType {
 
   history: PlaylistItem[];
   recentHistory: PlaylistItem[];
+  showAllHistory: boolean;
+  toggleShowAllHistory: () => void;
 
   queueId: string;
   queueName: string;
@@ -37,8 +39,23 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
   const [queue, setQueue] = useState<PlaylistItem[]>([]);
   const [currentItem, setCurrentItem] = useState<PlaylistItem | null>(null);
   const [history, setHistory] = useState<PlaylistItem[]>([]);
+  const [showAllHistory, setShowAllHistory] = useState<boolean>(false);
 
-  const recentHistory = history.slice(0, 3);
+  // Sort history by addedAt (newest first), handling both number and legacy formats
+  const sortedHistory = [...history].sort((a, b) => {
+    // Only compare if both are numbers
+    if (typeof a.addedAt === 'number' && typeof b.addedAt === 'number') {
+      return b.addedAt - a.addedAt;
+    }
+    // If only one is a number, prioritize the number (newer format)
+    if (typeof a.addedAt === 'number') return -1;
+    if (typeof b.addedAt === 'number') return 1;
+    // If neither is a number, don't change order
+    return 0;
+  });
+
+  // Get all or just the first 3 items based on showAllHistory
+  const recentHistory = showAllHistory ? sortedHistory : sortedHistory.slice(0, 3);
 
   // Fetch queue metadata when queueId changes
   useEffect(() => {
@@ -115,7 +132,7 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
       videoId,
       title: `Loading video... (${videoId})`,
       thumbnail: `https://img.youtube.com/vi/${videoId}/default.jpg`,
-      addedAt: new Date(),
+      addedAt: Date.now(), // Current timestamp in milliseconds
     };
 
     try {
@@ -199,20 +216,26 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
     console.log('Playing next song');
 
     if (currentItem) {
+      // Create a copy of currentItem with updated addedAt timestamp for history
+      const historyItem = {
+        ...currentItem,
+        addedAt: Date.now() // Current timestamp in milliseconds
+      };
+
       if (firebaseDB.isInitialized()) {
         try {
-          console.log(`Adding current item to Firebase history for queue ${queueId}:`, currentItem.title);
-          firebaseDB.addToHistory(queueId, currentItem).catch(error => {
+          console.log(`Adding current item to Firebase history for queue ${queueId}:`, historyItem.title);
+          firebaseDB.addToHistory(queueId, historyItem).catch(error => {
             console.error('Firebase addToHistory failed, falling back to local state:', error);
-            setHistory((prev) => [currentItem, ...prev]);
+            setHistory((prev) => [historyItem, ...prev]);
           });
         } catch (error) {
           console.error('Error adding to history:', error);
-          setHistory((prev) => [currentItem, ...prev]);
+          setHistory((prev) => [historyItem, ...prev]);
         }
       } else {
-        console.log('Adding current item to local history:', currentItem.title);
-        setHistory((prev) => [currentItem, ...prev]);
+        console.log('Adding current item to local history:', historyItem.title);
+        setHistory((prev) => [historyItem, ...prev]);
       }
     }
 
@@ -293,6 +316,10 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
     }
   }, [queue, currentItem]);
 
+  const toggleShowAllHistory = () => {
+    setShowAllHistory(prev => !prev);
+  };
+
   const value = {
     queue,
     addToQueue,
@@ -303,6 +330,8 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
     updateCurrentItemInfo,
     history,
     recentHistory,
+    showAllHistory,
+    toggleShowAllHistory,
     queueId,
     queueName
   };

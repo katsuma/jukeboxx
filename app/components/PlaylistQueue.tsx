@@ -6,22 +6,36 @@ interface PlaylistQueueProps {
 }
 
 export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
-  const { queue, recentHistory, removeFromQueue, currentItem } = usePlaylist();
+  const { queue, recentHistory, removeFromQueue, currentItem, showAllHistory, toggleShowAllHistory } = usePlaylist();
 
-  // Function to format date
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "numeric",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-    }).format(date);
+  // Function to format timestamp - only handles number format, ignores legacy formats
+  const formatDate = (timestamp: any) => {
+    // Only process if it's a number (milliseconds timestamp)
+    if (typeof timestamp === 'number') {
+      try {
+        const date = new Date(timestamp);
+        return new Intl.DateTimeFormat("en-US", {
+          month: "numeric",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+        }).format(date);
+      } catch (error) {
+        console.error("Error formatting date:", error);
+        return "Date error";
+      }
+    }
+
+    // For all other formats, return Unknown date
+    return "Unknown date";
   };
 
   // Function to render queue item
   const renderQueueItem = (item: PlaylistItem, index: number, isHistory = false) => {
     // Use thumbnail URL
     const thumbnailUrl = item.thumbnail;
+    // Create YouTube video URL
+    const youtubeUrl = `https://www.youtube.com/watch?v=${item.videoId}`;
 
     return (
       <div
@@ -33,16 +47,29 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
         }`}
       >
         <div className="flex-shrink-0 w-16 h-12 mr-3">
-          <img
-            src={thumbnailUrl}
-            alt="Thumbnail"
-            className="w-full h-full object-cover rounded"
-          />
+          <a
+            href={youtubeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full h-full transition-opacity hover:opacity-80"
+          >
+            <img
+              src={thumbnailUrl}
+              alt="Thumbnail"
+              className="w-full h-full object-cover rounded"
+            />
+          </a>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm truncate">
-            {isHistory ? "Played: " : `${index + 1}. `}
-            {item.title}
+            <a
+              href={youtubeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-900 dark:text-gray-100 hover:text-gray-500 dark:hover:text-gray-300 transition-all border-b border-transparent hover:border-gray-500 dark:hover:border-gray-300"
+            >
+              {item.title}
+            </a>
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             {formatDate(item.addedAt)}
@@ -87,8 +114,20 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
       {/* Recently Played */}
       {recentHistory.length > 0 && (
         <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2">Recently Played</h3>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-lg font-semibold">Recently Played</h3>
+            <label className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+              <input
+                type="checkbox"
+                checked={showAllHistory}
+                onChange={toggleShowAllHistory}
+                className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              Show all history
+            </label>
+          </div>
           <div className="space-y-2">
+            {/* recentHistory is already sorted in PlaylistContext */}
             {recentHistory.map((item) => renderQueueItem(item, 0, true))}
           </div>
         </div>

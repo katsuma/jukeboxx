@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import YouTube from "react-youtube";
 import type { YouTubeEvent, YouTubePlayer as YTPlayer } from "react-youtube";
-import { usePlaylist } from "../contexts/PlaylistContext";
+import { usePlaylist, type PlaylistItem } from "../contexts/PlaylistContext";
 
 // Type definition for retrieving video data from YouTube player
 interface YouTubePlayerData {
@@ -51,25 +51,51 @@ export function YouTubePlayer({ className = "" }: YouTubePlayerProps) {
 
   // When video playback ends
   const onEnd = () => {
+    console.log("Video playback ended naturally");
     playNext();
   };
 
   // When an error occurs
-  const onError = () => {
-    console.error("YouTube player error occurred");
-    playNext(); // Move to next video even if an error occurs
+  const onError = (event: YouTubeEvent) => {
+    console.error("YouTube player error occurred", event);
+    // Only call playNext if there is a current item
+    if (currentItem) {
+      console.log("Moving to next video due to error");
+      playNext();
+    }
   };
 
-  // Reset player when current item changes
+  // Track previous currentItem to detect changes
+  const prevItemRef = useRef<PlaylistItem | null>(null);
+
+  // Reset player when current item changes to null
   useEffect(() => {
-    if (playerRef.current && !currentItem) {
-      playerRef.current.stopVideo();
+    // Only take action if we're transitioning from having an item to not having one
+    const hadItemBefore = prevItemRef.current !== null;
+    const hasItemNow = currentItem !== null;
+
+    // Update our ref to track the current state
+    prevItemRef.current = currentItem;
+
+    // Only stop video if we had an item before but don't have one now
+    if (hadItemBefore && !hasItemNow && playerRef.current) {
+      try {
+        console.log("Stopping video because we transitioned from having an item to not having one");
+        // Check if player is in a state where stopVideo can be called
+        const playerState = playerRef.current.getPlayerState?.();
+        // Only call stopVideo if player is in a valid state (not -1 which is unstarted)
+        if (playerState !== undefined && playerState !== -1) {
+          playerRef.current.stopVideo();
+        }
+      } catch (error) {
+        console.error("Error stopping video:", error);
+      }
     }
   }, [currentItem]);
 
   if (!currentItem) {
     return (
-      <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg ${className} relative`} style={{ paddingBottom: "75%" }}>
+      <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg ${className} relative`} style={{ paddingBottom: "56.2%" }}>
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="text-gray-500 dark:text-gray-400">
             Please add videos to the queue

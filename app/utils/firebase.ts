@@ -214,6 +214,10 @@ export const firebaseDB = {
 
     try {
       console.log(`Adding to Firebase queue ${queueId}:`, item.title);
+
+      // No need to convert addedAt as it's already a timestamp in milliseconds
+      // Just use the item as is
+
       await push(refs.queueRef, item);
     } catch (error) {
       console.error('Error adding to queue:', error);
@@ -269,7 +273,11 @@ export const firebaseDB = {
 
     try {
       console.log(`Updating current item in Firebase queue ${queueId}:`, item?.title || 'null');
-      await set(refs.currentItemRef, item);
+
+      // No need to convert addedAt as it's already a timestamp in milliseconds
+      const itemToStore = item;
+
+      await set(refs.currentItemRef, itemToStore);
     } catch (error) {
       console.error('Error updating current item:', error);
       throw error;
@@ -294,15 +302,12 @@ export const firebaseDB = {
         onValue(refs.historyRef, (snapshot) => {
           const data = snapshot.val() || {};
 
-          const newData = { [item.id]: item, ...data };
-          const keys = Object.keys(newData);
+          // No need to convert addedAt as it's already a timestamp in milliseconds
+          const itemWithTimestamp = item;
 
-          if (keys.length > 10) {
-            const keysToRemove = keys.slice(10);
-            keysToRemove.forEach(key => {
-              delete newData[key];
-            });
-          }
+          // Simply add the new item to history without removing old ones
+          // This allows "Show all history" to display all items
+          const newData = { [item.id]: itemWithTimestamp, ...data };
 
           set(refs.historyRef, newData).then(() => resolve());
         }, { onlyOnce: true });
