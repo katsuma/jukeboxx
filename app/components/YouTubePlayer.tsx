@@ -95,7 +95,7 @@ export function YouTubePlayer({ className = "" }: YouTubePlayerProps) {
 
   if (!currentItem) {
     return (
-      <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg ${className} relative`} style={{ paddingBottom: "75%" }}>
+      <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg ${className} relative`} style={{ paddingBottom: "56.2%" }}>
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="text-gray-500 dark:text-gray-400">
             Please add videos to the queue
