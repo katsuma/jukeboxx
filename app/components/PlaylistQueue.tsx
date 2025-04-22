@@ -107,7 +107,7 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
       {currentItem && (
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2">Now Playing</h3>
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg">
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             {renderQueueItem(currentItem, 0)}
           </div>
         </div>
