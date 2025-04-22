@@ -1,12 +1,14 @@
 import React from "react";
 import { usePlaylist, type PlaylistItem } from "../contexts/PlaylistContext";
+import { FaPlus } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 
 interface PlaylistQueueProps {
   className?: string;
 }
 
 export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
-  const { queue, recentHistory, removeFromQueue, currentItem, showAllHistory, toggleShowAllHistory } = usePlaylist();
+  const { queue, recentHistory, removeFromQueue, addToQueue, currentItem, showAllHistory, toggleShowAllHistory } = usePlaylist();
 
   // Function to format timestamp - only handles number format, ignores legacy formats
   const formatDate = (timestamp: any) => {
@@ -28,6 +30,11 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
 
     // For all other formats, return Unknown date
     return "Unknown date";
+  };
+
+  // Function to re-add history item to queue
+  const reAddToQueue = (item: PlaylistItem) => {
+    addToQueue(item.url);
   };
 
   // Function to render queue item
@@ -75,24 +82,21 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
             {formatDate(item.addedAt)}
           </p>
         </div>
-        {!isHistory && (
+        {isHistory ? (
+          <button
+            onClick={() => reAddToQueue(item)}
+            className="ml-2 p-1 text-gray-500 hover:text-green-500 dark:text-gray-400 dark:hover:text-green-400"
+            aria-label="Add to queue again"
+          >
+            <FaPlus className="h-5 w-5" />
+          </button>
+        ) : (
           <button
             onClick={() => removeFromQueue(item.id)}
             className="ml-2 p-1 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400"
             aria-label="Remove from queue"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <FaTimes className="h-5 w-5" />
           </button>
         )}
       </div>
