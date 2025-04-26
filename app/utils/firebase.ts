@@ -1,5 +1,8 @@
+import type { FirebaseApp } from 'firebase/app';
 import { initializeApp } from 'firebase/app';
+import type { Database } from 'firebase/database';
 import { getDatabase, ref, onValue, set, push, remove } from 'firebase/database';
+
 import type { PlaylistItem } from '../contexts/PlaylistContext';
 
 const checkEnvVars = () => {
@@ -22,8 +25,8 @@ const checkEnvVars = () => {
   return true;
 };
 
-let app: any;
-let database: any;
+let app: FirebaseApp | null = null;
+let database: Database | null = null;
 let isFirebaseInitialized = false;
 
 if (checkEnvVars()) {
@@ -138,7 +141,7 @@ export const firebaseDB = {
     }
   },
 
-  onQueueChanged: (queueId: string, callback: (items: PlaylistItem[]) => void) => {
+  onQueueChanged: (queueId: string, callback: (_items: PlaylistItem[]) => void) => {
     if (!isFirebaseInitialized) {
       callback([]);
       return dummyUnsubscribe;
@@ -159,7 +162,7 @@ export const firebaseDB = {
     });
   },
 
-  onCurrentItemChanged: (queueId: string, callback: (item: PlaylistItem | null) => void) => {
+  onCurrentItemChanged: (queueId: string, callback: (_item: PlaylistItem | null) => void) => {
     if (!isFirebaseInitialized) {
       callback(null);
       return dummyUnsubscribe;
@@ -179,7 +182,7 @@ export const firebaseDB = {
     });
   },
 
-  onHistoryChanged: (queueId: string, callback: (items: PlaylistItem[]) => void) => {
+  onHistoryChanged: (queueId: string, callback: (_items: PlaylistItem[]) => void) => {
     if (!isFirebaseInitialized) {
       callback([]);
       return dummyUnsubscribe;
@@ -245,7 +248,7 @@ export const firebaseDB = {
 
           if (data) {
             Object.entries(data).forEach(([key, value]) => {
-              if ((value as PlaylistItem).id === id) {
+              if ((value as PlaylistItem).id === id && database) {
                 remove(ref(database, `queues/${queueId}/queue/${key}`));
               }
             });

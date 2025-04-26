@@ -1,12 +1,14 @@
-import type { Route } from "./+types/queue";
-import { PlaylistProvider } from "../contexts/PlaylistContext";
-import { Header } from "../components/Header";
-import { Footer } from "../components/Footer";
-import { YouTubePlayer } from "../components/YouTubePlayer";
-import { AddToQueueForm } from "../components/AddToQueueForm";
-import { PlaylistQueue } from "../components/PlaylistQueue";
 import { useEffect, useState } from "react";
+
+import { AddToQueueForm } from "../components/AddToQueueForm";
+import { Footer } from "../components/Footer";
+import { Header } from "../components/Header";
+import { PlaylistQueue } from "../components/PlaylistQueue";
+import { YouTubePlayer } from "../components/YouTubePlayer";
+import { PlaylistProvider } from "../contexts/PlaylistContext";
 import { firebaseDB } from "../utils/firebase";
+
+import type { Route } from "./+types/queue";
 
 export function meta({ params, data }: Route.MetaArgs) {
   const queueName = data?.queueName || "Queue";
