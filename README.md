@@ -79,7 +79,7 @@ To set up the git hooks after cloning the repository:
 npm install
 ```
 
-The `prepare` script will automatically set up husky.
+The `prepare` script will automatically set up husky. This project uses husky v9+ which has a simplified configuration.
 
 ## Build
 
