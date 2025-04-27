@@ -65,6 +65,22 @@ npm run lint:fix
 npm run typecheck
 ```
 
+### Git Hooks
+
+This project uses [husky](https://github.com/typicode/husky) and [lint-staged](https://github.com/okonet/lint-staged) to run linting and type checking before each commit.
+
+- All staged `.js`, `.jsx`, `.ts`, and `.tsx` files will be automatically linted and type-checked when you commit
+- If there are any linting errors or type errors, the commit will be aborted
+- This ensures that only code that passes quality checks is committed
+
+To set up the git hooks after cloning the repository:
+
+```bash
+npm install
+```
+
+The `prepare` script will automatically set up husky.
+
 ## Build
 
 ```bash
