@@ -1,5 +1,6 @@
-import { usePlaylist, type PlaylistItem } from "../contexts/PlaylistContext";
 import { FaPlus, FaTimes } from "react-icons/fa";
+
+import { usePlaylist, type PlaylistItem } from "@/contexts/PlaylistContext";
 
 interface PlaylistQueueProps {
   className?: string;
@@ -9,7 +10,7 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
   const { queue, recentHistory, removeFromQueue, addToQueue, currentItem, showAllHistory, toggleShowAllHistory } = usePlaylist();
 
   // Function to format timestamp - only handles number format, ignores legacy formats
-  const formatDate = (timestamp: any) => {
+  const formatDate = (timestamp: number | unknown) => {
     // Only process if it's a number (milliseconds timestamp)
     if (typeof timestamp === 'number') {
       try {

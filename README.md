@@ -1,5 +1,7 @@
 # Jukeboxx
 
+[![Lint & Type Check](https://github.com/katsuma/jukeboxx/actions/workflows/lint.yml/badge.svg)](https://github.com/katsuma/jukeboxx/actions/workflows/lint.yml)
+
 A jukebox application that manages and plays YouTube videos in a queue.
 
 ## Features
@@ -49,6 +51,35 @@ npm run dev
 ```
 
 The application will be available at `http://localhost:5173`.
+
+### Linting and Type Checking
+
+```bash
+# Run ESLint
+npm run lint
+
+# Fix ESLint issues automatically
+npm run lint:fix
+
+# Run TypeScript type checking
+npm run typecheck
+```
+
+### Git Hooks
+
+This project uses [husky](https://github.com/typicode/husky) and [lint-staged](https://github.com/okonet/lint-staged) to run linting and type checking before each commit.
+
+- All staged `.js`, `.jsx`, `.ts`, and `.tsx` files will be automatically linted and type-checked when you commit
+- If there are any linting errors or type errors, the commit will be aborted
+- This ensures that only code that passes quality checks is committed
+
+To set up the git hooks after cloning the repository:
+
+```bash
+npm install
+```
+
+The `prepare` script will automatically set up husky. This project uses husky v9+ which has a simplified configuration.
 
 ## Build
 

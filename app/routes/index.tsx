@@ -1,7 +1,9 @@
 import { Form, useActionData, useNavigation, redirect } from "react-router";
-import { Header } from "../components/Header";
-import { Footer } from "../components/Footer";
-import { firebaseDB } from "../utils/firebase";
+
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
+import { firebaseDB } from "@/utils/firebase";
+
 import type { Route } from "./+types/index";
 
 export async function action({ request }: Route.ActionArgs) {
@@ -26,7 +28,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   const title = "Jukeboxx - Create a new queue";
   const description = "Create a new queue for your YouTube Jukebox";
   const ogpImageUrl = "https://jukeboxx.club/ogp.png";

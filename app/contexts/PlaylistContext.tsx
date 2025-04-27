@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
-import { extractYouTubeVideoId } from "../utils/youtube";
-import { fetchYouTubeVideoInfo } from "../utils/youtube-api";
-import { firebaseDB } from "../utils/firebase";
+
+import { firebaseDB } from "@/utils/firebase";
+import { extractYouTubeVideoId } from "@/utils/youtube";
+import { fetchYouTubeVideoInfo } from "@/utils/youtube-api";
 
 export interface PlaylistItem {
   id: string;
@@ -15,13 +16,13 @@ export interface PlaylistItem {
 
 interface PlaylistContextType {
   queue: PlaylistItem[];
-  addToQueue: (url: string) => void;
-  removeFromQueue: (id: string) => void;
+  addToQueue: (_url: string) => void;
+  removeFromQueue: (_id: string) => void;
   clearQueue: () => void;
 
   currentItem: PlaylistItem | null;
   playNext: () => void;
-  updateCurrentItemInfo: (title: string) => void;
+  updateCurrentItemInfo: (_title: string) => void;
 
   history: PlaylistItem[];
   recentHistory: PlaylistItem[];
@@ -212,7 +213,7 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
     }
   };
 
-  const playNext = () => {
+  const playNext = useCallback(() => {
     console.log('Playing next song');
 
     if (currentItem) {
@@ -282,7 +283,7 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
         setCurrentItem(null);
       }
     }
-  };
+  }, [currentItem, queue, queueId, setCurrentItem, setQueue, setHistory]);
 
   const updateCurrentItemInfo = (title: string) => {
     if (currentItem) {
@@ -314,7 +315,7 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
     if (queue.length > 0 && !currentItem) {
       playNext();
     }
-  }, [queue, currentItem]);
+  }, [queue, currentItem, playNext]);
 
   const toggleShowAllHistory = () => {
     setShowAllHistory(prev => !prev);
