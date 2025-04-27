@@ -1,5 +1,7 @@
 # Jukeboxx
 
+[![Lint & Type Check](https://github.com/katsuma/jukeboxx/actions/workflows/lint.yml/badge.svg)](https://github.com/katsuma/jukeboxx/actions/workflows/lint.yml)
+
 A jukebox application that manages and plays YouTube videos in a queue.
 
 ## Features
@@ -49,6 +51,19 @@ npm run dev
 ```
 
 The application will be available at `http://localhost:5173`.
+
+### Linting and Type Checking
+
+```bash
+# Run ESLint
+npm run lint
+
+# Fix ESLint issues automatically
+npm run lint:fix
+
+# Run TypeScript type checking
+npm run typecheck
+```
 
 ## Build
 
