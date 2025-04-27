@@ -3,7 +3,7 @@ import { initializeApp } from 'firebase/app';
 import type { Database } from 'firebase/database';
 import { getDatabase, ref, onValue, set, push, remove } from 'firebase/database';
 
-import type { PlaylistItem } from '../contexts/PlaylistContext';
+import type { PlaylistItem } from '@/contexts/PlaylistContext';
 
 const checkEnvVars = () => {
   const requiredVars = [

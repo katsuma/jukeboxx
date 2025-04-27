@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 
-import { AddToQueueForm } from "../components/AddToQueueForm";
-import { Footer } from "../components/Footer";
-import { Header } from "../components/Header";
-import { PlaylistQueue } from "../components/PlaylistQueue";
-import { YouTubePlayer } from "../components/YouTubePlayer";
-import { PlaylistProvider } from "../contexts/PlaylistContext";
-import { firebaseDB } from "../utils/firebase";
+import { AddToQueueForm } from "@/components/AddToQueueForm";
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
+import { PlaylistQueue } from "@/components/PlaylistQueue";
+import { YouTubePlayer } from "@/components/YouTubePlayer";
+import { PlaylistProvider } from "@/contexts/PlaylistContext";
+import { firebaseDB } from "@/utils/firebase";
 
 import type { Route } from "./+types/queue";
 

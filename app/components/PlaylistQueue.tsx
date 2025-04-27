@@ -1,6 +1,6 @@
 import { FaPlus, FaTimes } from "react-icons/fa";
 
-import { usePlaylist, type PlaylistItem } from "../contexts/PlaylistContext";
+import { usePlaylist, type PlaylistItem } from "@/contexts/PlaylistContext";
 
 interface PlaylistQueueProps {
   className?: string;

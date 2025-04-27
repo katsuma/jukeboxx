@@ -46,7 +46,10 @@ export default tseslint.config(
         version: 'detect',
       },
       'import/resolver': {
-        typescript: {},
+        typescript: {
+          project: './tsconfig.json',
+          alwaysTryTypes: true
+        },
       },
     },
     rules: {
@@ -66,6 +69,12 @@ export default tseslint.config(
           'newlines-between': 'always',
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          'patterns': ['../*'],
+        }
       ],
     },
   },

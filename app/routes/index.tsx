@@ -1,8 +1,8 @@
 import { Form, useActionData, useNavigation, redirect } from "react-router";
 
-import { Footer } from "../components/Footer";
-import { Header } from "../components/Header";
-import { firebaseDB } from "../utils/firebase";
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
+import { firebaseDB } from "@/utils/firebase";
 
 import type { Route } from "./+types/index";
 

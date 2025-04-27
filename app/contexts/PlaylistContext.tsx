@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
 
-import { firebaseDB } from "../utils/firebase";
-import { extractYouTubeVideoId } from "../utils/youtube";
-import { fetchYouTubeVideoInfo } from "../utils/youtube-api";
+import { firebaseDB } from "@/utils/firebase";
+import { extractYouTubeVideoId } from "@/utils/youtube";
+import { fetchYouTubeVideoInfo } from "@/utils/youtube-api";
 
 export interface PlaylistItem {
   id: string;

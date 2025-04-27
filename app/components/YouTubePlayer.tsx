@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import YouTube from "react-youtube";
 import type { YouTubeEvent, YouTubePlayer as YTPlayer } from "react-youtube";
 
-import { usePlaylist, type PlaylistItem } from "../contexts/PlaylistContext";
+import { usePlaylist, type PlaylistItem } from "@/contexts/PlaylistContext";
 
 // Type definition for retrieving video data from YouTube player
 interface YouTubePlayerData {
