@@ -241,7 +241,11 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
     }
 
     if (queue.length > 0) {
-      const nextItem = queue[0];
+      const currentIndex = currentItem ? queue.findIndex(item => item.id === currentItem.id) : -1;
+
+      const nextIndex = currentIndex >= 0 && currentIndex < queue.length - 1 ? currentIndex + 1 : 0;
+      const nextItem = queue[nextIndex];
+
       console.log('Next item from queue:', nextItem.title);
 
       if (firebaseDB.isInitialized()) {
@@ -251,21 +255,13 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
             console.error('Firebase updateCurrentItem failed, falling back to local state:', error);
             setCurrentItem(nextItem);
           });
-
-          console.log(`Removing item from Firebase queue ${queueId}:`, nextItem.id);
-          firebaseDB.removeFromQueue(queueId, nextItem.id).catch(error => {
-            console.error('Firebase removeFromQueue failed, falling back to local state:', error);
-            setQueue((prev) => prev.slice(1));
-          });
         } catch (error) {
           console.error('Error updating current item:', error);
           setCurrentItem(nextItem);
-          setQueue((prev) => prev.slice(1));
         }
       } else {
-        console.log('Updating local current item and removing from queue');
+        console.log('Updating local current item without removing from queue');
         setCurrentItem(nextItem);
-        setQueue((prev) => prev.slice(1));
       }
     } else {
       console.log('No items in queue, setting current item to null');
@@ -283,7 +279,7 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
         setCurrentItem(null);
       }
     }
-  }, [currentItem, queue, queueId, setCurrentItem, setQueue, setHistory]);
+  }, [currentItem, queue, queueId, setCurrentItem, setHistory]);
 
   const updateCurrentItemInfo = (title: string) => {
     if (currentItem) {
