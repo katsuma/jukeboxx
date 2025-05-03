@@ -10,7 +10,7 @@ interface AddToQueueFormProps {
 export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { addToQueue } = usePlaylist();
+  const { addToPlayQueue } = usePlaylist();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +32,7 @@ export function AddToQueueForm({ className = "" }: AddToQueueFormProps) {
 
     console.log("URL is valid. Adding to queue:", inputValue);
 
-    addToQueue(inputValue);
+    addToPlayQueue(inputValue);
 
     if (inputRef.current) {
       inputRef.current.value = '';

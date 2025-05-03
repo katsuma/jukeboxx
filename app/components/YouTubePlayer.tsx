@@ -52,7 +52,6 @@ export function YouTubePlayer({ className = "" }: YouTubePlayerProps) {
 
   // When video playback ends
   const onEnd = () => {
-    console.log("Video playback ended naturally");
     playNext();
   };
 

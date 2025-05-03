@@ -321,6 +321,40 @@ export const firebaseDB = {
     }
   },
 
+  removeFromHistory: async (queueId: string, id: string) => {
+    if (!isFirebaseInitialized) {
+      console.warn('Firebase not initialized. Cannot remove from history.');
+      return;
+    }
+
+    const refs = getQueueRefs(queueId);
+
+    if (!refs) {
+      throw new Error('Failed to get queue references');
+    }
+
+    try {
+      console.log(`Removing from Firebase history for queue ${queueId}:`, id);
+      return new Promise<void>((resolve) => {
+        onValue(refs.historyRef, (snapshot) => {
+          const data = snapshot.val();
+
+          if (data) {
+            Object.entries(data).forEach(([key, value]) => {
+              if ((value as PlaylistItem).id === id && database) {
+                remove(ref(database, `queues/${queueId}/history/${key}`));
+              }
+            });
+          }
+          resolve();
+        }, { onlyOnce: true });
+      });
+    } catch (error) {
+      console.error('Error removing from history:', error);
+      throw error;
+    }
+  },
+
   clearQueue: async (queueId: string) => {
     if (!isFirebaseInitialized) {
       console.warn('Firebase not initialized. Cannot clear queue.');
