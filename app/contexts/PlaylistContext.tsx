@@ -15,19 +15,18 @@ export interface PlaylistItem {
 }
 
 interface PlaylistContextType {
-  queue: PlaylistItem[];
-  addToQueue: (_url: string) => void;
-  removeFromQueue: (_id: string) => void;
-  clearQueue: () => void;
+  playQueue: PlaylistItem[];
+  addToPlayQueue: (_url: string) => void;
+  removeFromPlayQueue: (_id: string) => void;
+  clearPlayQueue: () => void;
 
   currentItem: PlaylistItem | null;
   playNext: () => void;
   updateCurrentItemInfo: (_title: string) => void;
 
-  history: PlaylistItem[];
-  recentHistory: PlaylistItem[];
-  showAllHistory: boolean;
-  toggleShowAllHistory: () => void;
+  playedQueue: PlaylistItem[];
+  removeFromPlayedQueue: (_id: string) => void;
+  moveFromPlayedToPlayQueue: (_id: string) => void;
 
   queueId: string;
   queueName: string;
@@ -37,26 +36,9 @@ const PlaylistContext = createContext<PlaylistContextType | undefined>(undefined
 
 export function PlaylistProvider({ children, queueId }: { children: ReactNode, queueId: string }) {
   const [queueName, setQueueName] = useState<string>("");
-  const [queue, setQueue] = useState<PlaylistItem[]>([]);
+  const [playQueue, setPlayQueue] = useState<PlaylistItem[]>([]);
   const [currentItem, setCurrentItem] = useState<PlaylistItem | null>(null);
-  const [history, setHistory] = useState<PlaylistItem[]>([]);
-  const [showAllHistory, setShowAllHistory] = useState<boolean>(false);
-
-  // Sort history by addedAt (newest first), handling both number and legacy formats
-  const sortedHistory = [...history].sort((a, b) => {
-    // Only compare if both are numbers
-    if (typeof a.addedAt === 'number' && typeof b.addedAt === 'number') {
-      return b.addedAt - a.addedAt;
-    }
-    // If only one is a number, prioritize the number (newer format)
-    if (typeof a.addedAt === 'number') return -1;
-    if (typeof b.addedAt === 'number') return 1;
-    // If neither is a number, don't change order
-    return 0;
-  });
-
-  // Get all or just the first 3 items based on showAllHistory
-  const recentHistory = showAllHistory ? sortedHistory : sortedHistory.slice(0, 3);
+  const [playedQueue, setPlayedQueue] = useState<PlaylistItem[]>([]);
 
   // Fetch queue metadata when queueId changes
   useEffect(() => {
@@ -93,7 +75,7 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
 
     try {
       const unsubscribeQueue = firebaseDB.onQueueChanged(queueId, (items) => {
-        setQueue(items);
+        setPlayQueue(items);
       });
 
       const unsubscribeCurrent = firebaseDB.onCurrentItemChanged(queueId, (item) => {
@@ -101,7 +83,7 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
       });
 
       const unsubscribeHistory = firebaseDB.onHistoryChanged(queueId, (items) => {
-        setHistory(items);
+        setPlayedQueue(items);
       });
 
       return () => {
@@ -117,8 +99,8 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
     }
   }, [queueId]);
 
-  const addToQueue = async (url: string) => {
-    console.log('Adding to queue:', url);
+  const addToPlayQueue = async (url: string) => {
+    console.log('Adding to play queue:', url);
     const videoId = extractYouTubeVideoId(url);
     if (!videoId) {
       console.error('Invalid YouTube URL, could not extract video ID:', url);
@@ -153,11 +135,11 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
           await firebaseDB.addToQueue(queueId, updatedItem);
         } catch (error) {
           console.error('Firebase addToQueue failed, falling back to local state:', error);
-          setQueue((prev) => [...prev, updatedItem]);
+          setPlayQueue((prev: PlaylistItem[]) => [...prev, updatedItem]);
         }
       } else {
-        console.log('Adding to local queue:', updatedItem.title);
-        setQueue((prev) => [...prev, updatedItem]);
+        console.log('Adding to local play queue:', updatedItem.title);
+        setPlayQueue((prev: PlaylistItem[]) => [...prev, updatedItem]);
       }
     } catch (error) {
       console.error('Failed to fetch video information:', error);
@@ -168,109 +150,135 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
           await firebaseDB.addToQueue(queueId, tempItem);
         } catch (firebaseError) {
           console.error('Firebase addToQueue failed, falling back to local state:', firebaseError);
-          setQueue((prev) => [...prev, tempItem]);
+          setPlayQueue((prev: PlaylistItem[]) => [...prev, tempItem]);
         }
       } else {
-        console.log('Adding default item to local queue');
-        setQueue((prev) => [...prev, tempItem]);
+        console.log('Adding default item to local play queue');
+        setPlayQueue((prev: PlaylistItem[]) => [...prev, tempItem]);
       }
     }
   };
 
-  const removeFromQueue = (id: string) => {
+  const removeFromPlayQueue = (id: string) => {
     if (firebaseDB.isInitialized()) {
       try {
         console.log(`Removing from Firebase queue ${queueId}:`, id);
         firebaseDB.removeFromQueue(queueId, id).catch(error => {
           console.error('Firebase removeFromQueue failed, falling back to local state:', error);
-          setQueue((prev) => prev.filter((item) => item.id !== id));
+          setPlayQueue((prev: PlaylistItem[]) => prev.filter((item) => item.id !== id));
         });
       } catch (error) {
-        console.error('Error removing from queue:', error);
-        setQueue((prev) => prev.filter((item) => item.id !== id));
+        console.error('Error removing from play queue:', error);
+        setPlayQueue((prev: PlaylistItem[]) => prev.filter((item) => item.id !== id));
       }
     } else {
-      console.log('Removing from local queue:', id);
-      setQueue((prev) => prev.filter((item) => item.id !== id));
+      console.log('Removing from local play queue:', id);
+      setPlayQueue((prev: PlaylistItem[]) => prev.filter((item) => item.id !== id));
     }
   };
 
-  const clearQueue = () => {
+  const clearPlayQueue = () => {
     if (firebaseDB.isInitialized()) {
       try {
         console.log(`Clearing Firebase queue ${queueId}`);
         firebaseDB.clearQueue(queueId).catch(error => {
           console.error('Firebase clearQueue failed, falling back to local state:', error);
-          setQueue([]);
+          setPlayQueue([]);
         });
       } catch (error) {
-        console.error('Error clearing queue:', error);
-        setQueue([]);
+        console.error('Error clearing play queue:', error);
+        setPlayQueue([]);
       }
     } else {
-      console.log('Clearing local queue');
-      setQueue([]);
+      console.log('Clearing local play queue');
+      setPlayQueue([]);
     }
   };
 
   const playNext = useCallback(() => {
-    console.log('Playing next song');
-
     if (currentItem) {
-      // Create a copy of currentItem with updated addedAt timestamp for history
-      const historyItem = {
+      const playedItem = {
         ...currentItem,
         addedAt: Date.now() // Current timestamp in milliseconds
       };
 
       if (firebaseDB.isInitialized()) {
         try {
-          console.log(`Adding current item to Firebase history for queue ${queueId}:`, historyItem.title);
-          firebaseDB.addToHistory(queueId, historyItem).catch(error => {
+          firebaseDB.addToHistory(queueId, playedItem).catch(error => {
             console.error('Firebase addToHistory failed, falling back to local state:', error);
-            setHistory((prev) => [historyItem, ...prev]);
+            setPlayedQueue((prev: PlaylistItem[]) => [playedItem, ...prev]);
           });
         } catch (error) {
-          console.error('Error adding to history:', error);
-          setHistory((prev) => [historyItem, ...prev]);
+          console.error('Error adding to played queue:', error);
+          setPlayedQueue((prev: PlaylistItem[]) => [playedItem, ...prev]);
         }
       } else {
-        console.log('Adding current item to local history:', historyItem.title);
-        setHistory((prev) => [historyItem, ...prev]);
+        console.log('Adding current item to local played queue:', playedItem.title);
+        setPlayedQueue((prev: PlaylistItem[]) => [playedItem, ...prev]);
+      }
+
+      const currentItemInQueue = playQueue.find(item => item.videoId === currentItem.videoId);
+      if (currentItemInQueue) {
+        if (firebaseDB.isInitialized()) {
+          try {
+            console.log(`Removing from Firebase queue ${queueId}:`, currentItemInQueue.id);
+            setPlayQueue((prev: PlaylistItem[]) => prev.filter((item) => item.videoId !== currentItem.videoId));
+
+            firebaseDB.removeFromQueue(queueId, currentItemInQueue.id).catch(error => {
+              console.error('Firebase removeFromQueue failed:', error);
+            });
+          } catch (error) {
+            console.error('Error removing from play queue:', error);
+            setPlayQueue((prev: PlaylistItem[]) => prev.filter((item) => item.videoId !== currentItem.videoId));
+          }
+        } else {
+          console.log('Removing from local play queue:', currentItemInQueue.id);
+          setPlayQueue((prev: PlaylistItem[]) => prev.filter((item) => item.videoId !== currentItem.videoId));
+        }
       }
     }
 
-    if (queue.length > 0) {
-      const currentIndex = currentItem ? queue.findIndex(item => item.id === currentItem.id) : -1;
+    const updatedPlayQueue = playQueue.filter(item => item.videoId !== currentItem?.videoId);
+    console.log('更新後のPlay Queue:', updatedPlayQueue.map(item => item.title));
 
-      const nextIndex = currentIndex >= 0 && currentIndex < queue.length - 1 ? currentIndex + 1 : 0;
-      const nextItem = queue[nextIndex];
-
-      console.log('Next item from queue:', nextItem.title);
+    if (updatedPlayQueue.length > 0) {
+      const nextItem = updatedPlayQueue[0];
+      console.log('Next item:', nextItem.title);
 
       if (firebaseDB.isInitialized()) {
         try {
           console.log(`Updating current item in Firebase for queue ${queueId}:`, nextItem.title);
-          firebaseDB.updateCurrentItem(queueId, nextItem).catch(error => {
-            console.error('Firebase updateCurrentItem failed, falling back to local state:', error);
-            setCurrentItem(nextItem);
-          });
+          setCurrentItem(nextItem);
+
+          firebaseDB.updateCurrentItem(queueId, nextItem)
+            .then(() => {
+              console.log('Firebase updateCurrentItem成功:', nextItem.title);
+            })
+            .catch(error => {
+              console.error('Firebase updateCurrentItem failed:', error);
+            });
         } catch (error) {
           console.error('Error updating current item:', error);
           setCurrentItem(nextItem);
         }
       } else {
-        console.log('Updating local current item without removing from queue');
         setCurrentItem(nextItem);
       }
+
+      console.log('Play Queue（after played）:', updatedPlayQueue.map(item => item.title));
     } else {
-      console.log('No items in queue, setting current item to null');
+      console.log('No items in play queue, setting current item to null');
       if (firebaseDB.isInitialized()) {
         try {
-          firebaseDB.updateCurrentItem(queueId, null).catch(error => {
-            console.error('Firebase updateCurrentItem(null) failed, falling back to local state:', error);
-            setCurrentItem(null);
-          });
+          setCurrentItem(null);
+
+          firebaseDB.updateCurrentItem(queueId, null)
+            .then(() => {
+              console.log('Firebase updateCurrentItem(null) success');
+            })
+            .catch(error => {
+              console.error('Firebase updateCurrentItem(null) failed:', error);
+            });
         } catch (error) {
           console.error('Error setting current item to null:', error);
           setCurrentItem(null);
@@ -279,7 +287,7 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
         setCurrentItem(null);
       }
     }
-  }, [currentItem, queue, queueId, setCurrentItem, setHistory]);
+  }, [currentItem, playQueue, queueId]);
 
   const updateCurrentItemInfo = (title: string) => {
     if (currentItem) {
@@ -308,27 +316,48 @@ export function PlaylistProvider({ children, queueId }: { children: ReactNode, q
   };
 
   useEffect(() => {
-    if (queue.length > 0 && !currentItem) {
+    if (playQueue.length > 0 && !currentItem) {
       playNext();
     }
-  }, [queue, currentItem, playNext]);
+  }, [playQueue, currentItem, playNext]);
 
-  const toggleShowAllHistory = () => {
-    setShowAllHistory(prev => !prev);
+  const removeFromPlayedQueue = (id: string) => {
+    if (firebaseDB.isInitialized()) {
+      try {
+        console.log(`Removing from Firebase history for queue ${queueId}:`, id);
+        firebaseDB.removeFromHistory(queueId, id).catch(error => {
+          console.error('Firebase removeFromHistory failed, falling back to local state:', error);
+          setPlayedQueue((prev: PlaylistItem[]) => prev.filter((item) => item.id !== id));
+        });
+      } catch (error) {
+        console.error('Error removing from played queue:', error);
+        setPlayedQueue((prev: PlaylistItem[]) => prev.filter((item) => item.id !== id));
+      }
+    } else {
+      console.log('Removing from local played queue:', id);
+      setPlayedQueue((prev: PlaylistItem[]) => prev.filter((item) => item.id !== id));
+    }
+  };
+
+  const moveFromPlayedToPlayQueue = (id: string) => {
+    const item = playedQueue.find(item => item.id === id);
+    if (!item) return;
+
+    addToPlayQueue(item.url);
+    removeFromPlayedQueue(id);
   };
 
   const value = {
-    queue,
-    addToQueue,
-    removeFromQueue,
-    clearQueue,
+    playQueue,
+    addToPlayQueue,
+    removeFromPlayQueue,
+    clearPlayQueue,
     currentItem,
     playNext,
     updateCurrentItemInfo,
-    history,
-    recentHistory,
-    showAllHistory,
-    toggleShowAllHistory,
+    playedQueue,
+    removeFromPlayedQueue,
+    moveFromPlayedToPlayQueue,
     queueId,
     queueName
   };

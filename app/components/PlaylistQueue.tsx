@@ -7,7 +7,14 @@ interface PlaylistQueueProps {
 }
 
 export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
-  const { queue, history, removeFromQueue, addToQueue, currentItem, showAllHistory, toggleShowAllHistory } = usePlaylist();
+  const {
+    playQueue,
+    playedQueue,
+    removeFromPlayQueue,
+    removeFromPlayedQueue,
+    moveFromPlayedToPlayQueue,
+    currentItem
+  } = usePlaylist();
 
   // Function to format timestamp - only handles number format, ignores legacy formats
   const formatDate = (timestamp: number | unknown) => {
@@ -31,13 +38,29 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
     return "Unknown date";
   };
 
-  // Function to re-add history item to queue
-  const reAddToQueue = (item: PlaylistItem) => {
-    addToQueue(item.url);
+  // Played QueueからPlay Queueに再追加する
+  const reAddToPlayQueue = (item: PlaylistItem) => {
+    // Play Queueに追加し、Played Queueから削除する
+    moveFromPlayedToPlayQueue(item.id);
+  };
+
+  // Played Queueから削除し、Play Queueからも同じビデオIDを持つアイテムを削除する
+  const removePlayedAndQueueItems = (playedItem: PlaylistItem) => {
+    // Played Queueから削除
+    removeFromPlayedQueue(playedItem.id);
+
+    // Play Queueから同じビデオIDを持つアイテムを検索して削除
+    // ただし、現在再生中のアイテムは削除しない
+    const videoId = playedItem.videoId;
+    playQueue.forEach((queueItem: PlaylistItem) => {
+      if (queueItem.videoId === videoId && queueItem.id !== currentItem?.id) {
+        removeFromPlayQueue(queueItem.id);
+      }
+    });
   };
 
   // Function to render queue item
-  const renderQueueItem = (item: PlaylistItem, index: number, isHistory = false) => {
+  const renderQueueItem = (item: PlaylistItem, index: number, isPlayed = false) => {
     // Use thumbnail URL
     const thumbnailUrl = item.thumbnail;
     // Create YouTube video URL
@@ -47,7 +70,7 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
       <div
         key={item.id}
         className={`flex items-center p-2 rounded-lg ${
-          isHistory
+          isPlayed
             ? "bg-gray-100 dark:bg-gray-800"
             : "bg-white dark:bg-gray-900"
         }`}
@@ -81,49 +104,27 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
             {formatDate(item.addedAt)}
           </p>
         </div>
-        {isHistory ? (
+        <div className="flex">
+          {isPlayed && (
+            <button
+              onClick={() => reAddToPlayQueue(item)}
+              className="ml-2 p-1 text-gray-500 hover:text-green-500 dark:text-gray-400 dark:hover:text-green-400"
+              aria-label="Add to queue again"
+            >
+              <FaPlus className="h-5 w-5" />
+            </button>
+          )}
           <button
-            onClick={() => reAddToQueue(item)}
-            className="ml-2 p-1 text-gray-500 hover:text-green-500 dark:text-gray-400 dark:hover:text-green-400"
-            aria-label="Add to queue again"
-          >
-            <FaPlus className="h-5 w-5" />
-          </button>
-        ) : (
-          <button
-            onClick={() => removeFromQueue(item.id)}
+            onClick={() => isPlayed ? removePlayedAndQueueItems(item) : removeFromPlayQueue(item.id)}
             className="ml-2 p-1 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400"
             aria-label="Remove from queue"
           >
             <FaTimes className="h-5 w-5" />
           </button>
-        )}
+        </div>
       </div>
     );
   };
-
-  // Sort history by addedAt (newest first), handling both number and legacy formats
-  const sortedHistory = [...history].sort((a, b) => {
-    // Only compare if both are numbers
-    if (typeof a.addedAt === 'number' && typeof b.addedAt === 'number') {
-      return b.addedAt - a.addedAt;
-    }
-    // If only one is a number, prioritize the number (newer format)
-    if (typeof a.addedAt === 'number') return -1;
-    if (typeof b.addedAt === 'number') return 1;
-    // If neither is a number, don't change order
-    return 0;
-  });
-
-  const currentItemId = currentItem?.id;
-  const playedItems = queue.filter(item => {
-    return sortedHistory.some(historyItem => historyItem.videoId === item.videoId);
-  });
-
-  const unplayedItems = queue.filter(item => {
-    return !sortedHistory.some(historyItem => historyItem.videoId === item.videoId) &&
-           item.id !== currentItemId;
-  });
 
   return (
     <div className={`${className}`}>
@@ -137,36 +138,34 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
         </div>
       )}
 
-      {/* Queue */}
-      <div>
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-semibold">Play Queue</h3>
-          <label className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-            <input
-              type="checkbox"
-              checked={showAllHistory}
-              onChange={toggleShowAllHistory}
-              className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            Show played history
-          </label>
-        </div>
-
-        {queue.length === 0 ? (
+      {/* Play Queue */}
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold mb-2">Play Queue</h3>
+        {/* 現在再生中のアイテムを除外したPlay Queue */}
+        {playQueue.filter(item => item.id !== currentItem?.id).length === 0 ? (
           <p className="text-gray-500 dark:text-gray-400 p-2">
-            No videos in queue
+            No videos in play queue
           </p>
         ) : (
           <div className="space-y-2">
-            {unplayedItems.map((item, index) => renderQueueItem(item, index))}
+            {playQueue
+              .filter(item => item.id !== currentItem?.id)
+              .map((item, index) => renderQueueItem(item, index))}
+          </div>
+        )}
+      </div>
 
-            {showAllHistory && playedItems.length > 0 && (
-              <>
-                <div className="border-t border-gray-200 dark:border-gray-700 my-3 pt-2">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Played items</p>
-                </div>
-                {playedItems.map((item, index) => renderQueueItem(item, index, true))}
-              </>
+      {/* Played Queue */}
+      <div>
+        <h3 className="text-lg font-semibold mb-2">Played Queue</h3>
+        {playedQueue.length === 0 ? (
+          <p className="text-gray-500 dark:text-gray-400 p-2">
+            No played videos
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {playedQueue.map((item, index) =>
+              renderQueueItem(item, index, true)
             )}
           </div>
         )}
