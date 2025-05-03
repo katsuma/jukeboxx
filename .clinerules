@@ -1,0 +1,38 @@
+PROJECT_DESCRIPTION:
+Jukeboxxは、YouTubeビデオをキューで管理・再生するWebアプリケーションです。
+ユーザーはキューを作成し、YouTubeビデオをキューに追加して連続再生することができます。
+また、キューのURLを共有することで、友人と一緒にプレイリストを作成・管理することも可能です。
+
+TECH_STACK:
+- フロントエンド: React 19、TypeScript、Tailwind CSS
+- ルーティング: React Router 7
+- ビルドツール: Vite
+- データベース: Firebase Realtime Database
+- 外部API: YouTube Data API v3
+- コード品質: ESLint、TypeScript ESLint、Husky、lint-staged
+
+MAIN_FEATURES:
+- YouTubeビデオをキューに追加して連続再生
+- 複数のキューを作成可能
+- キューURLを共有して協力プレイリスト作成
+- Firebase Realtime Databaseを使用したリアルタイム同期
+- 複数デバイス間でのキューと再生状態の共有
+- 再生履歴管理
+- ダークモード対応のUI
+
+PROJECT_STRUCTURE:
+- app/components/: UIコンポーネント（YouTubePlayer、PlaylistQueue、AddToQueueFormなど）
+- app/contexts/: Reactコンテキスト（PlaylistContextなど）
+- app/routes/: アプリケーションのルート（index、queueなど）
+- app/utils/: ユーティリティ関数（firebase、youtube-api、youtubeなど）
+- public/: 静的ファイル（ロゴ、favicon、OGP画像など）
+
+DEVELOPMENT_WORKFLOW:
+- 開発サーバー起動: `npm run dev`
+- lint実行: `npm run lint`
+- lint自動修正: `npm run lint:fix`
+- build: `npm run build`
+
+RULES:
+- コメントは英語で必要最低限の内容で書くこと。書くときは、処理内容を書くのではなく、何をするための処理なのかを書くこと
+- 指示を終了するときは、 `npm run lint` を実行して、エラーが出ないことを確認すること
