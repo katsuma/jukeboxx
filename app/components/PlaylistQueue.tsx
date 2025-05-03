@@ -7,7 +7,7 @@ interface PlaylistQueueProps {
 }
 
 export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
-  const { queue, recentHistory, removeFromQueue, addToQueue, currentItem, showAllHistory, toggleShowAllHistory } = usePlaylist();
+  const { queue, history, removeFromQueue, addToQueue, currentItem, showAllHistory, toggleShowAllHistory } = usePlaylist();
 
   // Function to format timestamp - only handles number format, ignores legacy formats
   const formatDate = (timestamp: number | unknown) => {
@@ -102,6 +102,29 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
     );
   };
 
+  // Sort history by addedAt (newest first), handling both number and legacy formats
+  const sortedHistory = [...history].sort((a, b) => {
+    // Only compare if both are numbers
+    if (typeof a.addedAt === 'number' && typeof b.addedAt === 'number') {
+      return b.addedAt - a.addedAt;
+    }
+    // If only one is a number, prioritize the number (newer format)
+    if (typeof a.addedAt === 'number') return -1;
+    if (typeof b.addedAt === 'number') return 1;
+    // If neither is a number, don't change order
+    return 0;
+  });
+
+  const currentItemId = currentItem?.id;
+  const playedItems = queue.filter(item => {
+    return sortedHistory.some(historyItem => historyItem.videoId === item.videoId);
+  });
+
+  const unplayedItems = queue.filter(item => {
+    return !sortedHistory.some(historyItem => historyItem.videoId === item.videoId) &&
+           item.id !== currentItemId;
+  });
+
   return (
     <div className={`${className}`}>
       {/* Now Playing */}
@@ -114,38 +137,37 @@ export function PlaylistQueue({ className = "" }: PlaylistQueueProps) {
         </div>
       )}
 
-      {/* Recently Played */}
-      {recentHistory.length > 0 && (
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-lg font-semibold">Recently Played</h3>
-            <label className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-              <input
-                type="checkbox"
-                checked={showAllHistory}
-                onChange={toggleShowAllHistory}
-                className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              Show all history
-            </label>
-          </div>
-          <div className="space-y-2">
-            {/* recentHistory is already sorted in PlaylistContext */}
-            {recentHistory.map((item) => renderQueueItem(item, 0, true))}
-          </div>
-        </div>
-      )}
-
       {/* Queue */}
       <div>
-        <h3 className="text-lg font-semibold mb-2">Play Queue</h3>
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-lg font-semibold">Play Queue</h3>
+          <label className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+            <input
+              type="checkbox"
+              checked={showAllHistory}
+              onChange={toggleShowAllHistory}
+              className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            Show played history
+          </label>
+        </div>
+
         {queue.length === 0 ? (
           <p className="text-gray-500 dark:text-gray-400 p-2">
             No videos in queue
           </p>
         ) : (
           <div className="space-y-2">
-            {queue.map((item, index) => renderQueueItem(item, index))}
+            {unplayedItems.map((item, index) => renderQueueItem(item, index))}
+
+            {showAllHistory && playedItems.length > 0 && (
+              <>
+                <div className="border-t border-gray-200 dark:border-gray-700 my-3 pt-2">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Played items</p>
+                </div>
+                {playedItems.map((item, index) => renderQueueItem(item, index, true))}
+              </>
+            )}
           </div>
         )}
       </div>
