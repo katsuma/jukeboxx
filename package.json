@@ -16,7 +16,7 @@
     ]
   },
   "dependencies": {
-    "@react-router/node": "^7.6.2",
+    "@react-router/node": "^7.8.1",
     "@react-router/serve": "^7.6.2",
     "@types/react-youtube": "^7.6.2",
     "firebase": "^11.8.1",
