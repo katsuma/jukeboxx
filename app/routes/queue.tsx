@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 
 import { AddToQueueForm } from "@/components/AddToQueueForm";
+import { AuthGate } from "@/components/AuthGate";
+import { AuthStatus } from "@/components/AuthStatus";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { PlaylistQueue } from "@/components/PlaylistQueue";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { PlaylistProvider } from "@/contexts/PlaylistContext";
 import { firebaseDB } from "@/utils/firebase";
 
@@ -52,34 +55,20 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export default function Queue() {
-  const [queueName, setQueueName] = useState<string>("Loading...");
+  return (
+    <AuthProvider>
+      <QueueContent />
+    </AuthProvider>
+  );
+}
+
+function QueueContent() {
   const [queueId, setQueueId] = useState<string>("");
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const pathQueueId = window.location.pathname.substring(1);
       setQueueId(pathQueueId);
-
-      if (!pathQueueId || pathQueueId === "") return;
-
-      const fetchQueueMetadata = async () => {
-        try {
-          const metadata = await firebaseDB.getQueueMetadata(pathQueueId);
-          if (metadata) {
-            setQueueName(metadata.name);
-            if (typeof document !== 'undefined') {
-              document.title = `${metadata.name} | Jukeboxx - Create a new queue`;
-            }
-          } else {
-            setQueueName("Unnamed Queue");
-          }
-        } catch (error) {
-          console.error('Error fetching queue metadata:', error);
-          setQueueName("Unnamed Queue");
-        }
-      };
-
-      fetchQueueMetadata();
     }
   }, []);
 
@@ -88,8 +77,40 @@ export default function Queue() {
   }
 
   return (
+    <AuthGate>
+      <QueueMain queueId={queueId} />
+    </AuthGate>
+  );
+}
+
+function QueueMain({ queueId }: { queueId: string }) {
+  const [queueName, setQueueName] = useState<string>("Loading...");
+
+  useEffect(() => {
+    const fetchQueueMetadata = async () => {
+      try {
+        const metadata = await firebaseDB.getQueueMetadata(queueId);
+        if (metadata) {
+          setQueueName(metadata.name);
+          if (typeof document !== 'undefined') {
+            document.title = `${metadata.name} | Jukeboxx - Create a new queue`;
+          }
+        } else {
+          setQueueName("Unnamed Queue");
+        }
+      } catch (error) {
+        console.error('Error fetching queue metadata:', error);
+        setQueueName("Unnamed Queue");
+      }
+    };
+
+    fetchQueueMetadata();
+  }, [queueId]);
+
+  return (
     <PlaylistProvider queueId={queueId}>
       <div className="container mx-auto px-4 py-8">
+        <AuthStatus />
         <Header>
           {queueName}
         </Header>
@@ -130,7 +151,8 @@ export default function Queue() {
                 </button>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Share this URL with friends to collaborate on the same queue
+                Share this URL with friends to collaborate on the same queue.
+                Collaborators need to sign in with Google to join.
               </p>
             </div>
           </div>

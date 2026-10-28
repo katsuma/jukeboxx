@@ -16,11 +16,12 @@ A jukebox application that manages and plays YouTube videos in a queue.
 
 ## How to Use
 
-1. Create a new queue with a custom name
-2. Share the queue URL with friends
-3. Enter a YouTube URL to add it to the queue
-4. Videos will play automatically in sequence
-5. Everyone with the link can add songs and enjoy the music together
+1. Sign in with your Google account
+2. Create a new queue with a custom name
+3. Share the queue URL with friends
+4. Enter a YouTube URL to add it to the queue
+5. Videos will play automatically in sequence
+6. Everyone with the link who is signed in with Google can add songs and enjoy the music together
 
 ## Development Setup
 
@@ -80,6 +81,57 @@ npm install
 ```
 
 The `prepare` script will automatically set up husky. This project uses husky v9+ which has a simplified configuration.
+
+## Firebase Security Rules
+
+Jukeboxx requires users to sign in with Google. The Realtime Database
+security rules live in [`database.rules.json`](database.rules.json) at the
+repository root:
+
+```json
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null"
+  }
+}
+```
+
+Only authenticated users can read or write any data. Anonymous access is
+denied, which prevents anyone who merely knows a database or queue URL from
+reading, changing, or deleting queue data.
+
+### Applying the rules
+
+The rules in this repository are not deployed automatically. Apply them in
+one of these ways:
+
+1. **Firebase console** — open the
+   [Firebase console](https://console.firebase.google.com/), select the
+   Jukeboxx project, go to **Realtime Database → Rules**, paste the contents
+   of `database.rules.json`, and publish.
+2. **Firebase CLI** — add a `firebase.json` that points the `database.rules`
+   setting at `database.rules.json`, then run:
+
+   ```bash
+   firebase deploy --only database
+   ```
+
+### Enabling Google sign-in
+
+Authentication must be configured in the Firebase console before sign-in
+works:
+
+1. In the Firebase console, go to **Authentication → Sign-in method**.
+2. Enable the **Google** provider and save.
+
+The app uses Firebase Authentication with the Google provider
+(`signInWithPopup`) and only loads queue data after a user has signed in.
+
+> **Note:** Because the database now requires authentication, everyone who
+> collaborates on a queue must sign in with a Google account first. Sharing
+> a queue URL is no longer enough on its own — collaborators will be asked
+> to sign in when they open the link.
 
 ## Build
 
