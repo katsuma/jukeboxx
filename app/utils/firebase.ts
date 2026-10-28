@@ -1,5 +1,13 @@
 import type { FirebaseApp } from 'firebase/app';
 import { initializeApp } from 'firebase/app';
+import type { Auth, User } from 'firebase/auth';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut
+} from 'firebase/auth';
 import type { Database } from 'firebase/database';
 import { getDatabase, ref, onValue, set, push, remove } from 'firebase/database';
 
@@ -27,6 +35,7 @@ const checkEnvVars = () => {
 
 let app: FirebaseApp | null = null;
 let database: Database | null = null;
+let auth: Auth | null = null;
 let isFirebaseInitialized = false;
 
 if (checkEnvVars()) {
@@ -43,6 +52,7 @@ if (checkEnvVars()) {
 
     app = initializeApp(firebaseConfig);
     database = getDatabase(app);
+    auth = getAuth(app);
 
     isFirebaseInitialized = true;
     console.log('Firebase initialized successfully with config:', {
@@ -61,6 +71,61 @@ if (checkEnvVars()) {
 } else {
   console.warn('Firebase is not initialized due to missing environment variables. Using local state only.');
 }
+
+// Firebase Authentication (Google sign-in)
+export { auth };
+
+export const signInWithGoogle = async (): Promise<void> => {
+  if (!isFirebaseInitialized || !auth) {
+    console.warn('Firebase Auth is not initialized. Cannot sign in.');
+    return;
+  }
+
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    console.log('Signed in with Google:', result.user.email || result.user.uid);
+  } catch (error) {
+    console.error('Error signing in with Google:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+    }
+    throw error;
+  }
+};
+
+export const signOutUser = async (): Promise<void> => {
+  if (!isFirebaseInitialized || !auth) {
+    console.warn('Firebase Auth is not initialized. Cannot sign out.');
+    return;
+  }
+
+  try {
+    await signOut(auth);
+    console.log('Signed out successfully');
+  } catch (error) {
+    console.error('Error signing out:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+    }
+    throw error;
+  }
+};
+
+export const subscribeToAuthChanges = (
+  callback: (_user: User | null) => void
+): (() => void) => {
+  if (!isFirebaseInitialized || !auth) {
+    console.warn('Firebase Auth is not initialized. Auth state will remain signed out.');
+    callback(null);
+    return dummyUnsubscribe;
+  }
+
+  return onAuthStateChanged(auth, (user) => {
+    console.log('Auth state changed:', user ? (user.email || user.uid) : 'signed out');
+    callback(user);
+  });
+};
 
 // Helper function to get references for a specific queue
 const getQueueRefs = (queueId: string) => {
